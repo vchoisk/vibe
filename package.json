@@ -2,8 +2,5 @@
   "devDependencies": {
     "turbo": "^2.5.5"
   },
-  "dependencies": {
-    "@anthropic-ai/claude-code": "^1.0.58",
-    "global": "^4.4.0"
-  }
+  "dependencies": {}
 }
