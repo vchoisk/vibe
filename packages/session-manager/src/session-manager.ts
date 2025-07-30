@@ -1,0 +1,241 @@
+import { EventEmitter } from 'events';
+import fs from 'fs-extra';
+import path from 'path';
+import { PhotoSession, Photo, Pose } from '@snapstudio/types';
+import { generateSessionId } from './utils';
+
+export interface SessionManagerOptions {
+  dataDirectory: string;
+  maxPhotosPerSession?: number;
+  maxSessionTime?: number;
+}
+
+export class SessionManager extends EventEmitter {
+  private options: SessionManagerOptions;
+  private currentSession: PhotoSession | null = null;
+  private sessionTimer: NodeJS.Timeout | null = null;
+
+  constructor(options: SessionManagerOptions) {
+    super();
+    this.options = {
+      maxPhotosPerSession: 9,
+      maxSessionTime: 3600000, // 1 hour default
+      ...options,
+    };
+    this.ensureDataDirectory();
+  }
+
+  private async ensureDataDirectory(): Promise<void> {
+    await fs.ensureDir(path.join(this.options.dataDirectory, 'sessions'));
+  }
+
+  async createSession(pose: Pose, outputDirectory: string): Promise<PhotoSession> {
+    if (this.currentSession && this.currentSession.status !== 'complete') {
+      throw new Error('A session is already active. Please complete it first.');
+    }
+
+    const session: PhotoSession = {
+      id: generateSessionId(),
+      poseType: pose.category,
+      poseName: pose.name,
+      startTime: new Date(),
+      photoCount: 0,
+      maxPhotos: this.options.maxPhotosPerSession!,
+      photos: [],
+      starredPhotos: [],
+      status: 'active',
+      outputDirectory,
+    };
+
+    this.currentSession = session;
+    await this.saveSession(session);
+
+    // Start session timer
+    this.startSessionTimer();
+
+    this.emit('session-created', session);
+    return session;
+  }
+
+  async addPhoto(photo: Photo): Promise<void> {
+    if (!this.currentSession || this.currentSession.status !== 'active') {
+      throw new Error('No active session to add photos to');
+    }
+
+    if (this.currentSession.photos.length >= this.currentSession.maxPhotos) {
+      await this.updateSessionStatus('review');
+    }
+
+    this.currentSession.photos.push(photo);
+    this.currentSession.photoCount = this.currentSession.photos.length;
+
+    await this.saveSession(this.currentSession);
+    this.emit('photo-added', { session: this.currentSession, photo });
+  }
+
+  async starPhoto(photoId: string, starred: boolean): Promise<void> {
+    if (!this.currentSession) {
+      throw new Error('No active session');
+    }
+
+    const photo = this.currentSession.photos.find(p => p.id === photoId);
+    if (!photo) {
+      throw new Error('Photo not found in current session');
+    }
+
+    photo.starred = starred;
+
+    if (starred && !this.currentSession.starredPhotos.includes(photoId)) {
+      this.currentSession.starredPhotos.push(photoId);
+    } else if (!starred) {
+      this.currentSession.starredPhotos = this.currentSession.starredPhotos.filter(
+        id => id !== photoId
+      );
+    }
+
+    await this.saveSession(this.currentSession);
+    this.emit('photo-starred', { photoId, starred, session: this.currentSession });
+  }
+
+  async updateSessionStatus(status: PhotoSession['status']): Promise<void> {
+    if (!this.currentSession) {
+      throw new Error('No active session');
+    }
+
+    this.currentSession.status = status;
+
+    if (status === 'complete') {
+      this.currentSession.endTime = new Date();
+      this.stopSessionTimer();
+    }
+
+    await this.saveSession(this.currentSession);
+    this.emit('session-updated', this.currentSession);
+  }
+
+  async completeSession(): Promise<PhotoSession> {
+    if (!this.currentSession) {
+      throw new Error('No active session to complete');
+    }
+
+    await this.updateSessionStatus('complete');
+    const completedSession = this.currentSession;
+    this.currentSession = null;
+
+    this.emit('session-completed', completedSession);
+    return completedSession;
+  }
+
+  getCurrentSession(): PhotoSession | null {
+    return this.currentSession;
+  }
+
+  async getAllSessions(): Promise<PhotoSession[]> {
+    const sessionsDir = path.join(this.options.dataDirectory, 'sessions');
+    const files = await fs.readdir(sessionsDir);
+    const sessions: PhotoSession[] = [];
+
+    for (const file of files) {
+      if (file.endsWith('.json')) {
+        const sessionPath = path.join(sessionsDir, file);
+        const session = await fs.readJson(sessionPath);
+        sessions.push(this.deserializeSession(session));
+      }
+    }
+
+    return sessions.sort((a, b) => 
+      new Date(b.startTime).getTime() - new Date(a.startTime).getTime()
+    );
+  }
+
+  async getSession(sessionId: string): Promise<PhotoSession | null> {
+    const sessionPath = path.join(
+      this.options.dataDirectory,
+      'sessions',
+      `session-${sessionId}.json`
+    );
+
+    if (await fs.pathExists(sessionPath)) {
+      const session = await fs.readJson(sessionPath);
+      return this.deserializeSession(session);
+    }
+
+    return null;
+  }
+
+  private async saveSession(session: PhotoSession): Promise<void> {
+    const sessionPath = path.join(
+      this.options.dataDirectory,
+      'sessions',
+      `session-${session.id}.json`
+    );
+
+    await fs.writeJson(sessionPath, this.serializeSession(session), { spaces: 2 });
+  }
+
+  private startSessionTimer(): void {
+    if (this.sessionTimer) {
+      clearTimeout(this.sessionTimer);
+    }
+
+    this.sessionTimer = setTimeout(async () => {
+      if (this.currentSession && this.currentSession.status === 'active') {
+        await this.updateSessionStatus('review');
+        this.emit('session-timeout', this.currentSession);
+      }
+    }, this.options.maxSessionTime!);
+  }
+
+  private stopSessionTimer(): void {
+    if (this.sessionTimer) {
+      clearTimeout(this.sessionTimer);
+      this.sessionTimer = null;
+    }
+  }
+
+  private serializeSession(session: PhotoSession): any {
+    return {
+      ...session,
+      startTime: session.startTime.toISOString(),
+      endTime: session.endTime?.toISOString(),
+      photos: session.photos.map(photo => ({
+        ...photo,
+        captureTime: photo.captureTime.toISOString(),
+      })),
+    };
+  }
+
+  private deserializeSession(data: any): PhotoSession {
+    return {
+      ...data,
+      startTime: new Date(data.startTime),
+      endTime: data.endTime ? new Date(data.endTime) : undefined,
+      photos: data.photos.map((photo: any) => ({
+        ...photo,
+        captureTime: new Date(photo.captureTime),
+      })),
+    };
+  }
+
+  async cleanupOldSessions(daysToKeep: number = 30): Promise<number> {
+    const sessions = await this.getAllSessions();
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - daysToKeep);
+
+    let deletedCount = 0;
+
+    for (const session of sessions) {
+      if (session.endTime && session.endTime < cutoffDate) {
+        const sessionPath = path.join(
+          this.options.dataDirectory,
+          'sessions',
+          `session-${session.id}.json`
+        );
+        await fs.remove(sessionPath);
+        deletedCount++;
+      }
+    }
+
+    return deletedCount;
+  }
+}
