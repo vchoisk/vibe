@@ -8,8 +8,8 @@ The development process follows these 5 sequential steps:
 
 1. **Ideation** → Generate and select project ideas
 2. **PRD Creation** → Define product requirements 
-3. **Architecture Design** → Plan technical implementation
-4. **Development Planning** → Break down into actionable tasks
+3. **User Scenarios** → Map user workflows and interactions
+4. **Technical Specification** → Architecture design + implementation planning
 5. **Implementation** → Execute server-first, then client development
 
 ## Folder Structure
@@ -19,15 +19,16 @@ claude-workflow/
 ├── prompts/           # Template prompts for each step
 │   ├── 01-ideation.md
 │   ├── 02-prd.md
-│   ├── 03-architecture.md
-│   ├── 04-development-planning.md
+│   ├── 03-user-scenarios.md
+│   ├── 04-technical-specification.md
 │   └── 05-implementation.md
 ├── outputs/           # Generated documents from each step
-│   ├── ideation/
-│   ├── prd/
-│   ├── architecture/
-│   ├── planning/
-│   └── implementation-logs/
+│   ├── [project-name]/
+│   │   ├── 01-ideation.md
+│   │   ├── 02-prd.md
+│   │   ├── 03-user-scenarios.md
+│   │   ├── 04-technical-specification.md
+│   │   └── 05-implementation-logs/
 └── README.md          # This file
 ```
 
@@ -41,22 +42,22 @@ Use `prompts/01-ideation.md` to generate multiple project ideas and select the b
 ### Step 2: Create PRD
 Use `prompts/02-prd.md` with your selected idea to create a comprehensive Product Requirements Document.
 
-**Output**: Save PRD to `outputs/prd/product-requirements.md`
+**Output**: Save PRD to `outputs/[project-name]/02-prd.md`
 
-### Step 3: Architecture Design
-Use `prompts/03-architecture.md` with your PRD to design the full-stack technical architecture.
+### Step 3: User Scenarios
+Use `prompts/03-user-scenarios.md` with your PRD to map detailed user workflows and interactions.
 
-**Output**: Save architecture to `outputs/architecture/technical-design.md`
+**Output**: Save scenarios to `outputs/[project-name]/03-user-scenarios.md`
 
-### Step 4: Development Planning
-Use `prompts/04-development-planning.md` to break down the architecture into sequential development tasks.
+### Step 4: Technical Specification
+Use `prompts/04-technical-specification.md` with your PRD and user scenarios to create a comprehensive tech spec combining architecture design with implementation planning.
 
-**Output**: Save plan to `outputs/planning/development-plan.md`
+**Output**: Save tech spec to `outputs/[project-name]/04-technical-specification.md`
 
 ### Step 5: Implementation
-Use `prompts/05-implementation.md` for each development task, following server-first then client approach.
+Use `prompts/05-implementation.md` for each development task, following the technical specification and server-first approach.
 
-**Output**: Log progress in `outputs/implementation-logs/`
+**Output**: Log progress in `outputs/[project-name]/05-implementation-logs/`
 
 ## Development Approach
 
