@@ -1,0 +1,149 @@
+.main {
+  min-height: 100vh;
+  padding: 20px;
+  background: #f5f7fa;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.header {
+  margin-bottom: 40px;
+}
+
+.title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin: 16px 0 8px 0;
+  color: #1a1a1a;
+}
+
+.subtitle {
+  font-size: 1.125rem;
+  color: #666;
+  margin: 0 0 32px 0;
+}
+
+.categories {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 32px;
+  flex-wrap: wrap;
+}
+
+.loading {
+  text-align: center;
+  padding: 60px;
+  font-size: 1.125rem;
+  color: #666;
+}
+
+.poseGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+.poseCard {
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 2px solid transparent;
+}
+
+.poseCard:hover {
+  transform: translateY(-4px);
+}
+
+.poseCard.selected {
+  border-color: #0066CC;
+  box-shadow: 0 0 0 4px rgba(0, 102, 204, 0.1);
+}
+
+.poseImage {
+  width: 100%;
+  height: 200px;
+  background: #e9ecef;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.posePlaceholder {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #999;
+  text-align: center;
+  padding: 20px;
+}
+
+.poseName {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+  color: #333;
+}
+
+.poseDescription {
+  font-size: 0.875rem;
+  color: #666;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.selectedInfo {
+  position: sticky;
+  bottom: 20px;
+  margin-top: 40px;
+}
+
+.selectedInfo h3 {
+  font-size: 1.5rem;
+  margin: 0 0 12px 0;
+  color: #333;
+}
+
+.selectedInfo p {
+  font-size: 1rem;
+  color: #666;
+  margin: 0 0 20px 0;
+}
+
+.instructions {
+  margin-bottom: 24px;
+}
+
+.instructions h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 12px 0;
+  color: #333;
+}
+
+.instructions ul {
+  margin: 0;
+  padding-left: 24px;
+}
+
+.instructions li {
+  margin-bottom: 8px;
+  color: #555;
+  line-height: 1.5;
+}
+
+@media (max-width: 768px) {
+  .title {
+    font-size: 2rem;
+  }
+  
+  .poseGrid {
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 16px;
+  }
+  
+  .categories {
+    justify-content: center;
+  }
+}

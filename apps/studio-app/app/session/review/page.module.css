@@ -1,0 +1,170 @@
+.main {
+  min-height: 100vh;
+  padding: 20px;
+  background: #f5f7fa;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.loading {
+  text-align: center;
+  padding: 60px;
+  font-size: 1.125rem;
+  color: #666;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin: 0 0 8px 0;
+  color: #1a1a1a;
+}
+
+.subtitle {
+  font-size: 1.25rem;
+  color: #666;
+  margin: 0 0 16px 0;
+}
+
+.stats {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #0066CC;
+}
+
+.actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 32px;
+}
+
+.photoGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  margin-bottom: 40px;
+}
+
+.photoCard {
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  background: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+}
+
+.photoCard.starred {
+  box-shadow: 0 0 0 4px #FFD700;
+}
+
+.photoWrapper {
+  position: relative;
+  aspect-ratio: 3/4;
+}
+
+.photoPlaceholder {
+  width: 100%;
+  height: 100%;
+  background: #e9ecef;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #999;
+}
+
+.starButton {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 48px;
+  height: 48px;
+  background: rgba(255, 255, 255, 0.9);
+  border: none;
+  border-radius: 50%;
+  font-size: 28px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.starButton:hover {
+  transform: scale(1.1);
+  background: white;
+}
+
+.photoCard.starred .starButton {
+  color: #FFD700;
+  background: white;
+}
+
+.footer {
+  position: sticky;
+  bottom: 20px;
+  margin-top: 40px;
+}
+
+.footerContent {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 32px;
+}
+
+.footerInfo h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+  color: #333;
+}
+
+.footerInfo p {
+  font-size: 1rem;
+  color: #666;
+  margin: 0;
+}
+
+.footerActions {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+@media (max-width: 768px) {
+  .title {
+    font-size: 2rem;
+  }
+  
+  .photoGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  
+  .footerContent {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .footerActions {
+    width: 100%;
+    flex-direction: column;
+  }
+  
+  .footerActions button {
+    width: 100%;
+  }
+}

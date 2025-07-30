@@ -1,0 +1,31 @@
+.card {
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  transition: box-shadow 0.2s ease;
+}
+
+.card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.cardHeader {
+  padding: 20px 24px;
+  border-bottom: 1px solid #E5E5E5;
+}
+
+.cardBody {
+  padding: 24px;
+}
+
+.cardFooter {
+  padding: 16px 24px;
+  border-top: 1px solid #E5E5E5;
+  background-color: #F9F9F9;
+}
+
+.clickable {
+  cursor: pointer;
+  user-select: none;
+}

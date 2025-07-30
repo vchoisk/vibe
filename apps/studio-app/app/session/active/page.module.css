@@ -1,0 +1,173 @@
+.main {
+  min-height: 100vh;
+  padding: 20px;
+  background: #f5f7fa;
+}
+
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.loading {
+  text-align: center;
+  padding: 60px;
+  font-size: 1.125rem;
+  color: #666;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin: 0 0 8px 0;
+  color: #1a1a1a;
+}
+
+.subtitle {
+  font-size: 1.25rem;
+  color: #666;
+  margin: 0;
+}
+
+.progressCard {
+  margin-bottom: 32px;
+}
+
+.progressInfo {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.progressTitle {
+  font-size: 2rem;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+  color: #333;
+}
+
+.progressText {
+  font-size: 1.125rem;
+  color: #666;
+  margin: 0;
+}
+
+.progressBar {
+  height: 8px;
+  background: #e9ecef;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 32px;
+}
+
+.progressFill {
+  height: 100%;
+  background: #0066CC;
+  transition: width 0.3s ease;
+}
+
+.photoCounter {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
+  gap: 12px;
+}
+
+.photoSlot {
+  aspect-ratio: 1;
+  background: #e9ecef;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #999;
+  transition: all 0.3s ease;
+}
+
+.photoSlot.filled {
+  background: #0066CC;
+  color: white;
+  transform: scale(1.05);
+}
+
+.instructions {
+  margin-bottom: 32px;
+}
+
+.instructions h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0 0 16px 0;
+  color: #333;
+}
+
+.instructions ol {
+  margin: 0;
+  padding-left: 24px;
+}
+
+.instructions li {
+  margin-bottom: 12px;
+  color: #555;
+  line-height: 1.6;
+  font-size: 1rem;
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.waitingMessage {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+}
+
+.waitingMessage p {
+  margin: 0 0 20px 0;
+  font-size: 1.125rem;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  margin: 0 auto;
+  border: 4px solid #e9ecef;
+  border-top-color: #0066CC;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.connectionWarning {
+  color: #DC3545;
+  font-size: 0.875rem;
+  margin-top: 16px;
+}
+
+@media (max-width: 768px) {
+  .title {
+    font-size: 2rem;
+  }
+  
+  .progressTitle {
+    font-size: 1.5rem;
+  }
+  
+  .photoCounter {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
