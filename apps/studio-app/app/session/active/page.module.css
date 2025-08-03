@@ -70,29 +70,48 @@
   transition: width 0.3s ease;
 }
 
-.photoCounter {
+.photoGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-top: 24px;
 }
 
 .photoSlot {
+  position: relative;
   aspect-ratio: 1;
-  background: #e9ecef;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: #999;
+  background: #f5f7fa;
+  border-radius: 12px;
+  overflow: hidden;
   transition: all 0.3s ease;
 }
 
-.photoSlot.filled {
-  background: #0066CC;
-  color: white;
-  transform: scale(1.05);
+.photoSlot:hover {
+  transform: scale(1.02);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.photoThumbnail {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  cursor: pointer;
+}
+
+.emptySlot {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #e9ecef;
+  border: 2px dashed #d1d5db;
+}
+
+.slotNumber {
+  font-size: 2rem;
+  font-weight: 600;
+  color: #9ca3af;
 }
 
 .instructions {
@@ -167,7 +186,11 @@
     font-size: 1.5rem;
   }
   
-  .photoCounter {
-    grid-template-columns: repeat(3, 1fr);
+  .photoGrid {
+    gap: 12px;
+  }
+  
+  .slotNumber {
+    font-size: 1.5rem;
   }
 }

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { SessionManager } from '@snapstudio/session-manager';
 import { PoseLibrary } from '@snapstudio/pose-library';
 import { getPaths, defaultConfig } from '@snapstudio/config';
+import { createErrorResponse, errors } from '@/lib/api/errors';
 
 let poseLibrary: PoseLibrary | null = null;
 
@@ -49,10 +50,7 @@ export async function GET(request: NextRequest) {
       total: sessions.length,
     });
   } catch (error) {
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Failed to fetch sessions' },
-      { status: 500 }
-    );
+    return createErrorResponse(error, 500, '/api/sessions');
   }
 }
 
@@ -63,33 +61,35 @@ export async function POST(request: NextRequest) {
     const { poseId, outputDirectory } = body;
 
     if (!poseId) {
-      return NextResponse.json(
-        { error: 'poseId is required' },
-        { status: 400 }
-      );
+      throw errors.badRequest('poseId is required', { received: body });
     }
 
     const library = getPoseLibrary();
     const pose = library.getPoseById(poseId);
 
     if (!pose) {
-      return NextResponse.json(
-        { error: 'Pose not found' },
-        { status: 404 }
-      );
+      throw errors.notFound(`Pose with ID '${poseId}'`);
     }
 
     const manager = getSessionManager();
+    
+    // Check if there's already an active session
+    const currentSession = manager.getCurrentSession();
+    if (currentSession && currentSession.status === 'active') {
+      throw errors.conflict(
+        'A photo session is already active. Please complete or cancel the current session first.',
+        { currentSessionId: currentSession.id }
+      );
+    }
+
     const session = await manager.createSession(
       pose,
       outputDirectory || defaultConfig.outputDirectory
     );
 
+    console.log(`[API] Created new session: ${session.id} with pose: ${pose.name}`);
     return NextResponse.json({ session }, { status: 201 });
   } catch (error) {
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Failed to create session' },
-      { status: 500 }
-    );
+    return createErrorResponse(error, 500, '/api/sessions');
   }
 }

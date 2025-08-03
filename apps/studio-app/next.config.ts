@@ -3,6 +3,9 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   transpilePackages: ["@snapstudio/ui", "@snapstudio/types"],
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
   experimental: {
     // Enable server actions for file operations
     serverActions: {

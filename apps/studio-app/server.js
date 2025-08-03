@@ -22,7 +22,7 @@ let io = null;
 // Setup directories before starting
 setupDirectories().then(() => {
   return app.prepare();
-}).then(() => {
+}).then(async () => {
   const server = createServer(async (req, res) => {
     try {
       const parsedUrl = parse(req.url, true);
@@ -48,11 +48,21 @@ setupDirectories().then(() => {
     maxPhotosPerSession: defaultConfig.photosPerSession,
     maxSessionTime: defaultConfig.maxSessionTime,
   });
+  
+  // Wait for session manager to load any active sessions
+  await sessionManager.waitForInitialization();
 
   photoMonitor = new PhotoMonitor({
     watchDirectory: defaultConfig.watchDirectory,
     awaitWriteFinish: true,
   });
+  
+  // If there's a restored active session, start watching for photos
+  const currentSession = sessionManager.getCurrentSession();
+  if (currentSession && currentSession.status === 'active') {
+    console.log('Restored active session, starting photo monitor');
+    photoMonitor.startWatching(currentSession.id);
+  }
 
   // Set up photo monitor events
   photoMonitor.on('new-photo', async (photo) => {
@@ -65,10 +75,9 @@ setupDirectories().then(() => {
       // Broadcast to all connected clients
       io.emit('new-photo', photo);
       
-      // Check if session is complete
+      // Get updated session state
       const session = sessionManager.getCurrentSession();
-      if (session && session.photoCount >= session.maxPhotos) {
-        await sessionManager.updateSessionStatus('review');
+      if (session) {
         io.emit('session-updated', session);
       }
     } catch (error) {

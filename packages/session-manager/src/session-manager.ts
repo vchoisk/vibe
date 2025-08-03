@@ -14,22 +14,58 @@ export class SessionManager extends EventEmitter {
   private options: SessionManagerOptions;
   private currentSession: PhotoSession | null = null;
   private sessionTimer: NodeJS.Timeout | null = null;
+  private instanceId: string;
+  private static instanceCount = 0;
+  private initializationPromise: Promise<void>;
 
   constructor(options: SessionManagerOptions) {
     super();
+    SessionManager.instanceCount++;
+    this.instanceId = `SM-${SessionManager.instanceCount}-${Date.now()}`;
+    console.log(`[SessionManager] Creating instance ${this.instanceId}`);
+    
     this.options = {
       maxPhotosPerSession: 9,
       maxSessionTime: 3600000, // 1 hour default
       ...options,
     };
-    this.ensureDataDirectory();
+    this.initializationPromise = this.initialize();
+  }
+
+  private async initialize(): Promise<void> {
+    await this.ensureDataDirectory();
+    await this.loadLastActiveSession();
   }
 
   private async ensureDataDirectory(): Promise<void> {
     await fs.ensureDir(path.join(this.options.dataDirectory, 'sessions'));
   }
 
+  private async loadLastActiveSession(): Promise<void> {
+    try {
+      const sessions = await this.getAllSessions();
+      
+      // Find the most recent session that is still active (not review or complete)
+      const activeSession = sessions.find(s => s.status === 'active');
+      
+      if (activeSession) {
+        console.log(`[SessionManager ${this.instanceId}] Restoring session ${activeSession.id} (${activeSession.status})`);
+        this.currentSession = activeSession;
+        
+        // Restart the session timer if the session is still active
+        if (activeSession.status === 'active') {
+          this.startSessionTimer();
+        }
+      } else {
+        console.log(`[SessionManager ${this.instanceId}] No active session to restore`);
+      }
+    } catch (error) {
+      console.error(`[SessionManager ${this.instanceId}] Error loading last active session:`, error);
+    }
+  }
+
   async createSession(pose: Pose, outputDirectory: string): Promise<PhotoSession> {
+    console.log(`[SessionManager ${this.instanceId}] createSession called`);
     if (this.currentSession && this.currentSession.status !== 'complete') {
       throw new Error('A session is already active. Please complete it first.');
     }
@@ -62,8 +98,10 @@ export class SessionManager extends EventEmitter {
       throw new Error('No active session to add photos to');
     }
 
+    // Check if we've already reached the max
     if (this.currentSession.photos.length >= this.currentSession.maxPhotos) {
-      await this.updateSessionStatus('review');
+      console.log('Session already has maximum photos, ignoring new photo');
+      return;
     }
 
     this.currentSession.photos.push(photo);
@@ -71,6 +109,12 @@ export class SessionManager extends EventEmitter {
 
     await this.saveSession(this.currentSession);
     this.emit('photo-added', { session: this.currentSession, photo });
+
+    // Check if we've NOW reached the max after adding this photo
+    if (this.currentSession.photos.length >= this.currentSession.maxPhotos) {
+      console.log('Session reached maximum photos, changing status to review');
+      await this.updateSessionStatus('review');
+    }
   }
 
   async starPhoto(photoId: string, starred: boolean): Promise<void> {
@@ -98,7 +142,9 @@ export class SessionManager extends EventEmitter {
   }
 
   async updateSessionStatus(status: PhotoSession['status']): Promise<void> {
+    console.log(`[SessionManager ${this.instanceId}] updateSessionStatus called with status: ${status}`);
     if (!this.currentSession) {
+      console.log(`[SessionManager ${this.instanceId}] No current session to update`);
       throw new Error('No active session');
     }
 
@@ -126,7 +172,14 @@ export class SessionManager extends EventEmitter {
     return completedSession;
   }
 
+  async waitForInitialization(): Promise<void> {
+    await this.initializationPromise;
+  }
+
   getCurrentSession(): PhotoSession | null {
+    console.log(`[SessionManager ${this.instanceId}] getCurrentSession called, current session:`, 
+      this.currentSession ? `${this.currentSession.id} (${this.currentSession.status})` : 'null'
+    );
     return this.currentSession;
   }
 
