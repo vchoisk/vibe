@@ -33,11 +33,11 @@ export default function ReviewPage() {
       setPhotos(session.photos || []);
       setStarredPhotos(new Set(session.starredPhotos || []));
       setIsLoadingPhotos(false);
-    } else if (!sessionLoading && !isCompleting) {
-      // No session and not completing, redirect to home
+    } else if (!sessionLoading) {
+      // No session, redirect to home
       router.push('/');
     }
-  }, [session, sessionLoading, router, isCompleting]);
+  }, [session, sessionLoading, router]);
 
   const handleStarPhoto = async (photo: Photo) => {
     const isStarred = starredPhotos.has(photo.id);
@@ -96,10 +96,16 @@ export default function ReviewPage() {
   const handleComplete = async () => {
     setIsCompleting(true);
     
-    // Store event info before completing session
+    // Store event info and determine navigation before completing session
     const hasActiveEvent = event && event.status === 'active';
+    const navigateTo = hasActiveEvent ? '/event/active' : '/';
     
     try {
+      // If navigating to event page, do it immediately to avoid redirect race
+      if (hasActiveEvent) {
+        router.push('/event/active');
+      }
+      
       const response = await api.sessions.complete();
       
       // Show success message
@@ -110,13 +116,8 @@ export default function ReviewPage() {
       
       setToast({ message, type: 'success' });
       
-      // Navigate directly to event page if there's an active event
-      if (hasActiveEvent) {
-        // Navigate immediately without delay for better UX
-        router.push('/event/active');
-      } else {
-
-        // Only delay for home navigation
+      // Only navigate home after delay if not going to event
+      if (!hasActiveEvent) {
         setTimeout(() => {
           router.push('/');
         }, 2000);
@@ -125,6 +126,11 @@ export default function ReviewPage() {
       console.error('Failed to complete session:', error);
       setToast({ message: 'Failed to complete session. Please try again.', type: 'error' });
       setIsCompleting(false);
+      
+      // If we navigated to event but completion failed, go back
+      if (hasActiveEvent) {
+        router.push('/session/review');
+      }
     }
   };
 
