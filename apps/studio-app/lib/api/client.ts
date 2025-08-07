@@ -137,11 +137,11 @@ export const api = {
     current: () =>
       request<{ session: any }>('/sessions/current'),
     
-    create: (poseId: string, outputDirectory?: string) =>
+    create: (poseId: string, outputDirectory?: string, eventId?: string) =>
       request<{ session: any }>('/sessions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ poseId, outputDirectory }),
+        body: JSON.stringify({ poseId, outputDirectory, eventId }),
       }),
     
     updateStatus: (status: string) =>
@@ -183,6 +183,52 @@ export const api = {
   test: {
     createPhoto: () =>
       request<{ success: boolean; filename: string; message: string }>('/test/photo', {
+        method: 'POST',
+      }),
+  },
+  
+  // Events
+  events: {
+    list: () =>
+      request<{ events: any[] }>('/events'),
+    
+    create: (data: {
+      name: string;
+      clientName: string;
+      durationMinutes: number;
+      notes?: string;
+      pricePackage?: {
+        name: string;
+        durationMinutes: number;
+        price: number;
+      };
+    }) =>
+      request<{ event: any }>('/events', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      }),
+    
+    current: () =>
+      request<{ event: any; remainingMinutes: number }>('/events/current'),
+    
+    get: (id: string) =>
+      request<{ event: any }>(`/events/${id}`),
+    
+    update: (id: string, data: any) =>
+      request<{ event: any }>(`/events/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      }),
+    
+    start: (id: string) =>
+      request<{ event: any }>(`/events/${id}/start`, {
+        method: 'POST',
+      }),
+    
+    complete: (id: string) =>
+      request<{ summary: any }>(`/events/${id}/complete`, {
         method: 'POST',
       }),
   },

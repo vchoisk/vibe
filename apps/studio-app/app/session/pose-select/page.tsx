@@ -6,12 +6,14 @@ import { Button } from '@/components/Button';
 import { Card, CardBody } from '@/components/Card';
 import { api } from '@/lib/api/client';
 import { useSession } from '@/contexts/SessionContext';
+import { useEvent } from '@/contexts/EventContext';
 import { Pose } from '@snapstudio/types';
 import styles from './page.module.css';
 
 export default function PoseSelectPage() {
   const router = useRouter();
   const { session, isLoading: sessionLoading } = useSession();
+  const { event } = useEvent();
   const [poses, setPoses] = useState<Pose[]>([]);
   const [categories, setCategories] = useState<Array<{ name: string; count: number }>>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
@@ -57,7 +59,12 @@ export default function PoseSelectPage() {
 
     setIsCreating(true);
     try {
-      const response = await api.sessions.create(selectedPose.id);
+      // Pass eventId if we're within an active event
+      const response = await api.sessions.create(
+        selectedPose.id, 
+        undefined,
+        event && event.status === 'active' ? event.id : undefined
+      );
       console.log('Session created:', response);
       
       // Small delay to ensure WebSocket updates are received
@@ -97,7 +104,9 @@ export default function PoseSelectPage() {
           </Button>
           <h1 className={styles.title}>Choose Your Pose Style</h1>
           <p className={styles.subtitle}>
-            Select a pose to start your 9-photo session
+            {event && event.status === 'active' 
+              ? `Select a pose for ${event.clientName}'s session`
+              : 'Select a pose to start your 9-photo session'}
           </p>
         </div>
 

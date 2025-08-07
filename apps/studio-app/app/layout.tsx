@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { SessionProvider } from "@/contexts/SessionContext";
+import { EventProvider } from "@/contexts/EventContext";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -15,9 +16,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <SessionProvider>
-          {children}
-        </SessionProvider>
+        <EventProvider>
+          <SessionProvider>
+            {children}
+          </SessionProvider>
+        </EventProvider>
       </body>
     </html>
   );

@@ -36,6 +36,25 @@
   margin-bottom: 48px;
 }
 
+.eventBanner {
+  background: var(--primary);
+  color: white;
+  padding: 1.5rem;
+  border-radius: var(--radius);
+  margin-bottom: 2rem;
+}
+
+.eventBanner h3 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem 0;
+}
+
+.eventBanner p {
+  margin: 0 0 1rem 0;
+  opacity: 0.9;
+}
+
 .instructions {
   text-align: left;
   background: #f8f9fa;
@@ -47,6 +66,10 @@
   font-size: 1.125rem;
   margin: 0 0 16px 0;
   color: #333;
+}
+
+.instructions h3:not(:first-child) {
+  margin-top: 24px;
 }
 
 .instructions ol {

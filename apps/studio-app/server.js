@@ -3,7 +3,7 @@ const { parse } = require('url');
 const next = require('next');
 const { Server } = require('socket.io');
 const { PhotoMonitor } = require('@snapstudio/file-manager');
-const { SessionManager } = require('@snapstudio/session-manager');
+const { SessionManager, EventManager } = require('@snapstudio/session-manager');
 const { defaultConfig, getPaths } = require('@snapstudio/config');
 const { setupDirectories } = require('./lib/setup');
 
@@ -17,6 +17,7 @@ const handle = app.getRequestHandler();
 // Initialize managers
 let photoMonitor = null;
 let sessionManager = null;
+let eventManager = null;
 let io = null;
 
 // Setup directories before starting
@@ -47,6 +48,10 @@ setupDirectories().then(() => {
     dataDirectory: getPaths().appData,
     maxPhotosPerSession: defaultConfig.photosPerSession,
     maxSessionTime: defaultConfig.maxSessionTime,
+  });
+  
+  eventManager = new EventManager({
+    dataDirectory: getPaths().appData,
   });
   
   // Wait for session manager to load any active sessions
@@ -86,27 +91,66 @@ setupDirectories().then(() => {
   });
 
   // Set up session manager events
-  sessionManager.on('session-created', (session) => {
+  sessionManager.on('session-created', async (session) => {
     console.log('Session created:', session.id);
     // Start watching for photos
     photoMonitor.startWatching(session.id);
     io.emit('session-created', session);
+    
+    // If part of an event, update the event
+    if (session.eventId) {
+      const currentEvent = eventManager.getCurrentEvent();
+      if (currentEvent && currentEvent.id === session.eventId) {
+        await eventManager.addSessionToEvent(session.eventId, session.id);
+      }
+    }
   });
 
   sessionManager.on('session-updated', (session) => {
     io.emit('session-updated', session);
   });
 
-  sessionManager.on('session-completed', (session) => {
+  sessionManager.on('session-completed', async (session) => {
     console.log('Session completed:', session.id);
     // Stop watching for photos
     photoMonitor.stopWatching();
     io.emit('session-completed', { sessionId: session.id });
+    
+    // Update event photo counts if part of an event
+    if (session.eventId) {
+      const event = await eventManager.getEvent(session.eventId);
+      if (event) {
+        await eventManager.updateEvent(session.eventId, {
+          totalPhotos: event.totalPhotos + session.photos.length,
+          totalStarredPhotos: event.totalStarredPhotos + session.starredPhotos.length,
+        });
+      }
+    }
   });
 
   sessionManager.on('photo-starred', ({ photoId, starred, session }) => {
     io.emit('photo-starred', { photoId, starred });
     io.emit('session-updated', session);
+  });
+
+  // Set up event manager events
+  eventManager.on('event-started', (event) => {
+    console.log('Event started:', event.id);
+    io.emit('event-started', event);
+  });
+
+  eventManager.on('event-updated', (event) => {
+    io.emit('event-updated', event);
+  });
+
+  eventManager.on('event-completed', (summary) => {
+    console.log('Event completed:', summary.eventId);
+    io.emit('event-completed', summary);
+  });
+
+  eventManager.on('event-overtime', (event) => {
+    console.log('Event overtime:', event.id);
+    io.emit('event-overtime', event);
   });
 
   // Socket.IO connection handling
@@ -122,11 +166,18 @@ setupDirectories().then(() => {
     if (currentSession) {
       socket.emit('session-updated', currentSession);
     }
+    
+    // Send current event state to new connections
+    const currentEvent = eventManager.getCurrentEvent();
+    if (currentEvent) {
+      socket.emit('event-updated', currentEvent);
+    }
   });
 
   // Make managers available globally for API routes
   globalThis.photoMonitor = photoMonitor;
   globalThis.sessionManager = sessionManager;
+  globalThis.eventManager = eventManager;
   globalThis.io = io;
 
   server.listen(port, hostname, () => {

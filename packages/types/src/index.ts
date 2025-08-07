@@ -20,6 +20,7 @@ export interface PhotoSession {
   starredPhotos: string[];
   status: 'active' | 'review' | 'complete';
   outputDirectory: string;
+  eventId?: string; // Associated event ID if part of an event
 }
 
 export interface StudioConfig {
@@ -59,9 +60,48 @@ export interface AppState {
   };
 }
 
+export interface Event {
+  id: string;
+  name: string;
+  clientName: string;
+  startTime: Date;
+  endTime: Date;
+  durationMinutes: number;
+  status: 'scheduled' | 'active' | 'completed' | 'cancelled';
+  sessions: string[]; // Array of session IDs
+  totalPhotos: number;
+  totalStarredPhotos: number;
+  createdAt: Date;
+  activatedAt?: Date;
+  completedAt?: Date;
+  notes?: string;
+  pricePackage?: {
+    name: string;
+    durationMinutes: number;
+    price: number;
+  };
+}
+
+export interface EventSummary {
+  eventId: string;
+  totalSessions: number;
+  totalPhotos: number;
+  totalStarredPhotos: number;
+  allPhotos: Photo[];
+  sessionDetails: PhotoSession[];
+  duration: {
+    scheduled: number;
+    actual: number;
+  };
+}
+
 export interface SocketEvents {
   'new-photo': Photo;
   'photo-starred': { photoId: string; starred: boolean };
   'session-updated': PhotoSession;
   'session-completed': { sessionId: string };
+  'session-created': PhotoSession;
+  'event-started': Event;
+  'event-updated': Event;
+  'event-completed': EventSummary;
 }

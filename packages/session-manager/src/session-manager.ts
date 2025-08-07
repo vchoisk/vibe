@@ -64,7 +64,7 @@ export class SessionManager extends EventEmitter {
     }
   }
 
-  async createSession(pose: Pose, outputDirectory: string): Promise<PhotoSession> {
+  async createSession(pose: Pose, outputDirectory: string, eventId?: string): Promise<PhotoSession> {
     console.log(`[SessionManager ${this.instanceId}] createSession called`);
     if (this.currentSession && this.currentSession.status !== 'complete') {
       throw new Error('A session is already active. Please complete it first.');
@@ -81,6 +81,7 @@ export class SessionManager extends EventEmitter {
       starredPhotos: [],
       status: 'active',
       outputDirectory,
+      eventId, // Associate with event if provided
     };
 
     this.currentSession = session;
@@ -268,6 +269,11 @@ export class SessionManager extends EventEmitter {
         captureTime: new Date(photo.captureTime),
       })),
     };
+  }
+
+  async getSessionsByEventId(eventId: string): Promise<PhotoSession[]> {
+    const allSessions = await this.getAllSessions();
+    return allSessions.filter(session => session.eventId === eventId);
   }
 
   async cleanupOldSessions(daysToKeep: number = 30): Promise<number> {

@@ -1,0 +1,165 @@
+.main {
+  min-height: 100vh;
+  padding: 2rem 1rem;
+  background-color: var(--background);
+}
+
+.container {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.title {
+  font-size: 2.5rem;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+  color: var(--foreground);
+}
+
+.subtitle {
+  font-size: 1.125rem;
+  color: var(--muted-foreground);
+  margin-bottom: 2rem;
+}
+
+.timer {
+  display: inline-block;
+  margin-top: 1rem;
+}
+
+.timeDisplay {
+  padding: 1rem 2rem;
+  background-color: var(--card);
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.3s;
+}
+
+.timeDisplay.overtime {
+  border-color: var(--destructive);
+  background-color: rgba(var(--destructive-rgb), 0.05);
+}
+
+.timeLabel,
+.overtimeLabel {
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted-foreground);
+}
+
+.overtimeLabel {
+  color: var(--destructive);
+}
+
+.time {
+  font-size: 2.5rem;
+  font-weight: bold;
+  font-variant-numeric: tabular-nums;
+  color: var(--foreground);
+}
+
+.overtime .time {
+  color: var(--destructive);
+}
+
+.stats {
+  margin-bottom: 2rem;
+}
+
+.statGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+  text-align: center;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.statLabel {
+  font-size: 0.875rem;
+  color: var(--muted-foreground);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.statValue {
+  font-size: 2rem;
+  font-weight: bold;
+  color: var(--foreground);
+}
+
+.actions {
+  margin-bottom: 2rem;
+}
+
+.sessionActive {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 2rem;
+}
+
+.sessionActive h3 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.sessionActive p {
+  color: var(--muted-foreground);
+}
+
+.startButton {
+  width: 100%;
+}
+
+.notes {
+  margin-bottom: 2rem;
+}
+
+.notesTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: var(--foreground);
+}
+
+.notesText {
+  color: var(--muted-foreground);
+  line-height: 1.6;
+}
+
+.footer {
+  display: flex;
+  justify-content: center;
+  padding-top: 2rem;
+  border-top: 1px solid var(--border);
+}
+
+@media (max-width: 640px) {
+  .statGrid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .sessionActive {
+    flex-direction: column;
+    text-align: center;
+  }
+}
