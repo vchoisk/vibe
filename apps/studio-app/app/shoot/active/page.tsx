@@ -240,7 +240,7 @@ export default function ActiveShootPage() {
                 if (filteredPhotos.length === 0) return null;
                 
                 return (
-                  <div key={session.id} className={styles.sessionSection}>
+                  <div key={`${session.id}-${index}`} className={styles.sessionSection}>
                     <h3 className={styles.sessionTitle}>
                       {t.shoot.sessionLabel} {index + 1} - {session.poseName} ({filteredPhotos.length} {photoFilter === 'starred' ? t.shoot.starredPhotosLabel.toLowerCase() : t.shoot.photosLabel.toLowerCase()})
                     </h3>

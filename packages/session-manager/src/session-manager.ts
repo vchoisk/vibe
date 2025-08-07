@@ -210,6 +210,7 @@ export class SessionManager extends EventEmitter {
     const sessionsDir = path.join(this.options.dataDirectory, 'sessions');
     const entries = await fs.readdir(sessionsDir);
     const sessions: PhotoSession[] = [];
+    const seenSessionIds = new Set<string>();
 
     for (const entry of entries) {
       const entryPath = path.join(sessionsDir, entry);
@@ -220,12 +221,22 @@ export class SessionManager extends EventEmitter {
         const sessionJsonPath = path.join(entryPath, 'session.json');
         if (await fs.pathExists(sessionJsonPath)) {
           const session = await fs.readJson(sessionJsonPath);
-          sessions.push(this.deserializeSession(session));
+          const deserialized = this.deserializeSession(session);
+          
+          // Add to results and mark as seen
+          sessions.push(deserialized);
+          seenSessionIds.add(deserialized.id);
         }
       } else if (entry.endsWith('.json')) {
         // Legacy structure: session-*.json files
+        // Only add if we haven't already seen this session from the new structure
         const session = await fs.readJson(entryPath);
-        sessions.push(this.deserializeSession(session));
+        const deserialized = this.deserializeSession(session);
+        
+        if (!seenSessionIds.has(deserialized.id)) {
+          sessions.push(deserialized);
+          seenSessionIds.add(deserialized.id);
+        }
       }
     }
 
