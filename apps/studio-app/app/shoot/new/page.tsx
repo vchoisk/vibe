@@ -6,6 +6,7 @@ import { Button } from '@/components/Button';
 import { Card, CardBody } from '@/components/Card';
 import { useShoot } from '@/contexts/ShootContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { PageLayout } from '@/components/PageLayout';
 import styles from './page.module.css';
 
 const DURATION_OPTIONS = [
@@ -65,8 +66,9 @@ export default function NewShootPage() {
   };
 
   return (
-    <main className={styles.main}>
-      <div className={styles.container}>
+    <PageLayout showBack backPath="/">
+      <main className={styles.main}>
+        <div className={styles.container}>
         <div className={styles.header}>
           <h1 className={styles.title}>{t.shoot.newShoot}</h1>
           <p className={styles.subtitle}>
@@ -168,6 +170,7 @@ export default function NewShootPage() {
           </CardBody>
         </Card>
       </div>
-    </main>
+      </main>
+    </PageLayout>
   );
 }

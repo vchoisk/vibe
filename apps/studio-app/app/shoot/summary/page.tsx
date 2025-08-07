@@ -4,6 +4,8 @@ import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/Button';
 import { Card, CardBody } from '@/components/Card';
+import { PageLayout } from '@/components/PageLayout';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { api } from '@/lib/api/client';
 import { Shoot, ShootSummary } from '@snapstudio/types';
 import styles from './page.module.css';
@@ -11,6 +13,7 @@ import styles from './page.module.css';
 function ShootSummaryContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { t } = useLanguage();
   const shootId = searchParams.get('id');
   
   const [shoot, setShoot] = useState<Shoot | null>(null);
@@ -197,8 +200,9 @@ function ShootSummaryContent() {
 }
 
 export default function ShootSummaryPage() {
+  const { t } = useLanguage();
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={<div>{t.common.loading}</div>}>
       <ShootSummaryContent />
     </Suspense>
   );

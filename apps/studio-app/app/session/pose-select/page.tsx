@@ -4,9 +4,11 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/Button';
 import { Card, CardBody } from '@/components/Card';
+import { PageLayout } from '@/components/PageLayout';
 import { api } from '@/lib/api/client';
 import { useSession } from '@/contexts/SessionContext';
 import { useShoot } from '@/contexts/ShootContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Pose } from '@snapstudio/types';
 import styles from './page.module.css';
 
@@ -14,6 +16,7 @@ export default function PoseSelectPage() {
   const router = useRouter();
   const { session, isLoading: sessionLoading } = useSession();
   const { shoot } = useShoot();
+  const { t } = useLanguage();
   const [poses, setPoses] = useState<Pose[]>([]);
   const [categories, setCategories] = useState<Array<{ name: string; count: number }>>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
@@ -78,7 +81,7 @@ export default function PoseSelectPage() {
       router.push('/session/active');
     } catch (error) {
       console.error('Failed to create session:', error);
-      alert('Failed to create session. Please try again.');
+      alert(t.errors.failedToCreateSession);
       setIsCreating(false);
     }
   };
@@ -99,26 +102,26 @@ export default function PoseSelectPage() {
   // Don't render until we've checked for existing sessions
   if (sessionLoading) {
     return (
-      <main className={styles.main}>
-        <div className={styles.loading}>Loading...</div>
-      </main>
+      <PageLayout>
+        <main className={styles.main}>
+          <div className={styles.loading}>{t.common.loading}</div>
+        </main>
+      </PageLayout>
     );
   }
 
   return (
-    <main className={styles.main}>
-      <div className={styles.container}>
-        <div className={styles.header}>
-          <Button variant="ghost" size="small" onClick={handleBack}>
-            ← Back
-          </Button>
-          <h1 className={styles.title}>Choose Your Pose Style</h1>
-          <p className={styles.subtitle}>
-            {shoot && shoot.status === 'active' 
-              ? `Select a pose for ${shoot.clientName}'s session`
-              : 'Select a pose to start your 9-photo session'}
-          </p>
-        </div>
+    <PageLayout showBack backPath={shoot && shoot.status === 'active' ? '/shoot/active' : '/'}>
+      <main className={styles.main}>
+        <div className={styles.container}>
+          <div className={styles.header}>
+            <h1 className={styles.title}>{t.poseSelect.title}</h1>
+            <p className={styles.subtitle}>
+              {shoot && shoot.status === 'active' 
+                ? t.poseSelect.subtitleWithClient.replace('{clientName}', shoot.clientName)
+                : t.poseSelect.subtitle}
+            </p>
+          </div>
 
         <div className={styles.categories}>
           <Button
@@ -126,7 +129,7 @@ export default function PoseSelectPage() {
             size="small"
             onClick={() => setSelectedCategory('all')}
           >
-            All Poses
+            {t.poseSelect.allPoses}
           </Button>
           {categories.map((cat) => (
             <Button
@@ -141,7 +144,7 @@ export default function PoseSelectPage() {
         </div>
 
         {isLoading ? (
-          <div className={styles.loading}>Loading poses...</div>
+          <div className={styles.loading}>{t.poseSelect.loadingPoses}</div>
         ) : (
           <div className={styles.poseGrid}>
             {filteredPoses.map((pose) => (
@@ -170,10 +173,10 @@ export default function PoseSelectPage() {
           <div className={styles.selectedInfo}>
             <Card>
               <CardBody>
-                <h3>Selected: {selectedPose.name}</h3>
+                <h3>{t.poseSelect.selected}: {selectedPose.name}</h3>
                 <p>{selectedPose.description}</p>
                 <div className={styles.instructions}>
-                  <h4>Instructions:</h4>
+                  <h4>{t.poseSelect.instructions}:</h4>
                   <ul>
                     {selectedPose.instructions.map((instruction, index) => (
                       <li key={index}>{instruction}</li>
@@ -186,13 +189,14 @@ export default function PoseSelectPage() {
                   onClick={handleStartSession}
                   loading={isCreating}
                 >
-                  Start Session with {selectedPose.name}
+                  {t.poseSelect.startSession} {selectedPose.name}
                 </Button>
               </CardBody>
             </Card>
           </div>
         )}
       </div>
-    </main>
+      </main>
+    </PageLayout>
   );
 }

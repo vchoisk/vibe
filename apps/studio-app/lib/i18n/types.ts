@@ -31,6 +31,7 @@ export interface Translations {
     start: string;
     complete: string;
     settings: string;
+    backToHome: string;
   };
   
   // Home page
@@ -95,6 +96,19 @@ export interface Translations {
     clearAll: string;
     completeSession: string;
     returnToCapture: string;
+    title: string;
+    takePhotos: string;
+    photoProgress: string;
+    photosRemaining: string;
+    sessionComplete: string;
+    instructions: string;
+    instructionsList: string[];
+    continueToReview: string;
+    photos: string;
+    cancelSession: string;
+    waitingForPhotos: string;
+    connectionLost: string;
+    cancelConfirm: string;
   };
   
   // Settings
@@ -117,5 +131,54 @@ export interface Translations {
     shootActive: string;
     noActiveShoot: string;
     failedToLoad: string;
+    failedToCreateSession: string;
+    failedToCompleteSession: string;
+    noActiveSession: string;
+    shootNotFound: string;
+  };
+  
+  // Pose selection
+  poseSelect: {
+    title: string;
+    subtitle: string;
+    subtitleWithClient: string;
+    allPoses: string;
+    loadingPoses: string;
+    selected: string;
+    instructions: string;
+    startSession: string;
+  };
+  
+  // Review page
+  review: {
+    title: string;
+    subtitle: string;
+    starredCount: string;
+    starAll: string;
+    clearAll: string;
+    starPhoto: string;
+    unstarPhoto: string;
+    readyToFinish: string;
+    photosSavedMessage: string;
+    noPhotosSelected: string;
+    takeMorePhotos: string;
+    completeSession: string;
+    sessionCompleteWithPhotos: string;
+    sessionCompleteNoPhotos: string;
+  };
+  
+  // Shoot summary
+  shootSummary: {
+    title: string;
+    totalSessions: string;
+    totalPhotos: string;
+    starredPhotos: string;
+    duration: string;
+    minutes: string;
+    sessionLabel: string;
+    photosCount: string;
+    invoice: string;
+    overtime: string;
+    additionalCharges: string;
   };
 }

@@ -8,6 +8,7 @@ import { Toast } from '@/components/Toast';
 import { useShoot } from '@/contexts/ShootContext';
 import { useSession } from '@/contexts/SessionContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { PageLayout } from '@/components/PageLayout';
 import { api } from '@/lib/api/client';
 import styles from './page.module.css';
 
@@ -118,8 +119,9 @@ export default function ActiveShootPage() {
   const isOvertime = remainingMinutes <= 0;
 
   return (
-    <main className={styles.main}>
-      <div className={styles.container}>
+    <PageLayout showBack backPath="/">
+      <main className={styles.main}>
+        <div className={styles.container}>
         <div className={styles.header}>
           <h1 className={styles.title}>{shoot.name}</h1>
           <p className={styles.subtitle}>Client: {shoot.clientName}</p>
@@ -288,6 +290,7 @@ export default function ActiveShootPage() {
           onClose={() => setToast(null)}
         />
       )}
-    </main>
+      </main>
+    </PageLayout>
   );
 }

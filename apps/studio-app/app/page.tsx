@@ -8,7 +8,7 @@ import { api } from '@/lib/api/client';
 import { useSession } from '@/contexts/SessionContext';
 import { useShoot } from '@/contexts/ShootContext';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { LanguageSelector } from '@/components/LanguageSelector';
+import { PageLayout } from '@/components/PageLayout';
 import styles from './page.module.css';
 
 export default function Home() {
@@ -65,11 +65,9 @@ export default function Home() {
   };
 
   return (
-    <main className={styles.main}>
-      <div className={styles.languageSelector}>
-        <LanguageSelector />
-      </div>
-      <div className={styles.container}>
+    <PageLayout>
+      <div className={styles.main}>
+        <div className={styles.container}>
         <Card className={styles.welcomeCard}>
           <CardBody>
             <h1 className={styles.title}>{t.home.welcome}</h1>
@@ -139,6 +137,7 @@ export default function Home() {
           </CardBody>
         </Card>
       </div>
-    </main>
+      </div>
+    </PageLayout>
   );
 }

@@ -5,9 +5,11 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/Button';
 import { Card, CardBody } from '@/components/Card';
 import { Toast } from '@/components/Toast';
+import { PageLayout } from '@/components/PageLayout';
 import { api } from '@/lib/api/client';
 import { useSession } from '@/contexts/SessionContext';
 import { useShoot } from '@/contexts/ShootContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Photo, PhotoSession } from '@snapstudio/types';
 import styles from './page.module.css';
 
@@ -15,6 +17,7 @@ export default function ReviewPage() {
   const router = useRouter();
   const { session, isLoading: sessionLoading, updateSessionStatus } = useSession();
   const { shoot } = useShoot();
+  const { t } = useLanguage();
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [starredPhotos, setStarredPhotos] = useState<Set<string>>(new Set());
   const [isLoadingPhotos, setIsLoadingPhotos] = useState(true);
@@ -114,8 +117,8 @@ export default function ReviewPage() {
       // Show success message
       const starredCount = response.starredCount || 0;
       const message = starredCount > 0
-        ? `Session complete! ${starredCount} photo${starredCount === 1 ? '' : 's'} saved to your output folder.`
-        : 'Session complete! No photos were saved.';
+        ? t.review.sessionCompleteWithPhotos.replace('{count}', String(starredCount))
+        : t.review.sessionCompleteNoPhotos;
       
       setToast({ message, type: 'success' });
       
@@ -127,7 +130,7 @@ export default function ReviewPage() {
       }
     } catch (error) {
       console.error('Failed to complete session:', error);
-      setToast({ message: 'Failed to complete session. Please try again.', type: 'error' });
+      setToast({ message: t.errors.failedToCompleteSession, type: 'error' });
       setIsCompleting(false);
       
       // If we navigated to shoot but completion failed, go back
@@ -153,31 +156,34 @@ export default function ReviewPage() {
 
   if (sessionLoading || isLoadingPhotos || !session) {
     return (
-      <main className={styles.main}>
-        <div className={styles.loading}>Loading photos...</div>
-      </main>
+      <PageLayout>
+        <main className={styles.main}>
+          <div className={styles.loading}>{t.common.loading}</div>
+        </main>
+      </PageLayout>
     );
   }
 
   return (
-    <main className={styles.main}>
-      <div className={styles.container}>
-        <div className={styles.header}>
-          <h1 className={styles.title}>Review Your Photos</h1>
-          <p className={styles.subtitle}>
-            Star your favorite photos to save them
-          </p>
-          <div className={styles.stats}>
-            {starredPhotos.size} of {photos.length} photos starred
+    <PageLayout showBack>
+      <main className={styles.main}>
+        <div className={styles.container}>
+          <div className={styles.header}>
+            <h1 className={styles.title}>{t.review.title}</h1>
+            <p className={styles.subtitle}>
+              {t.review.subtitle}
+            </p>
+            <div className={styles.stats}>
+              {t.review.starredCount.replace('{starred}', String(starredPhotos.size)).replace('{total}', String(photos.length))}
+            </div>
           </div>
-        </div>
 
         <div className={styles.actions}>
           <Button variant="secondary" size="small" onClick={handleStarAll}>
-            Star All
+            {t.review.starAll}
           </Button>
           <Button variant="ghost" size="small" onClick={handleClearAll}>
-            Clear All
+            {t.review.clearAll}
           </Button>
         </div>
 
@@ -199,7 +205,7 @@ export default function ReviewPage() {
                   className={styles.starButton}
                   onClick={() => handleStarPhoto(photo)}
                   aria-label={
-                    starredPhotos.has(photo.id) ? 'Unstar photo' : 'Star photo'
+                    starredPhotos.has(photo.id) ? t.review.unstarPhoto : t.review.starPhoto
                   }
                 >
                   {starredPhotos.has(photo.id) ? '★' : '☆'}
@@ -214,13 +220,11 @@ export default function ReviewPage() {
             <CardBody>
               <div className={styles.footerContent}>
                 <div className={styles.footerInfo}>
-                  <h3>Ready to finish?</h3>
+                  <h3>{t.review.readyToFinish}</h3>
                   <p>
                     {starredPhotos.size > 0
-                      ? `Your ${starredPhotos.size} starred photo${
-                          starredPhotos.size === 1 ? '' : 's'
-                        } will be saved to your output folder.`
-                      : 'No photos selected. Star some photos to save them.'}
+                      ? t.review.photosSavedMessage.replace('{count}', String(starredPhotos.size))
+                      : t.review.noPhotosSelected}
                   </p>
                 </div>
                 <div className={styles.footerActions}>
@@ -231,7 +235,7 @@ export default function ReviewPage() {
                     loading={isReturning}
                     disabled={isReturning}
                   >
-                    Take More Photos
+                    {t.review.takeMorePhotos}
                   </Button>
                   <Button
                     variant="primary"
@@ -240,7 +244,7 @@ export default function ReviewPage() {
                     loading={isCompleting}
                     disabled={starredPhotos.size === 0}
                   >
-                    Complete Session
+                    {t.review.completeSession}
                   </Button>
                 </div>
               </div>
@@ -256,6 +260,7 @@ export default function ReviewPage() {
           onClose={() => setToast(null)}
         />
       )}
-    </main>
+      </main>
+    </PageLayout>
   );
 }
