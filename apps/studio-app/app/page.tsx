@@ -36,11 +36,12 @@ export default function Home() {
           router.push('/session/review');
         }
       } else if (event && event.status === 'active') {
-        // If there's an active event, start a new session within it
-        router.push('/session/pose-select');
+        // If there's an active event, redirect to event page to start session
+        router.push('/event/active');
       } else {
-        // Start new session without event
-        router.push('/session/pose-select');
+        // No active event - sessions can only be started from events
+        alert('Please start an event first to begin photo sessions.');
+        setIsLoading(false);
       }
     } catch (error) {
       console.error('Failed to start session:', error);
@@ -85,14 +86,16 @@ export default function Home() {
             ) : null}
             
             <div className={styles.actions}>
-              <Button
-                size="large"
-                fullWidth
-                onClick={handleStartSession}
-                loading={isLoading}
-              >
-                {session ? 'Resume Session' : 'Start Photo Session'}
-              </Button>
+              {session ? (
+                <Button
+                  size="large"
+                  fullWidth
+                  onClick={handleStartSession}
+                  loading={isLoading}
+                >
+                  Resume Session
+                </Button>
+              ) : null}
               
               <Button
                 variant="primary"
@@ -102,6 +105,12 @@ export default function Home() {
               >
                 {event && event.status === 'active' ? 'Manage Event' : 'Start Timed Event'}
               </Button>
+              
+              {!event || event.status !== 'active' ? (
+                <p className={styles.hint}>
+                  Start an event to begin taking photo sessions
+                </p>
+              ) : null}
               
               <Button
                 variant="ghost"
@@ -114,21 +123,21 @@ export default function Home() {
             </div>
 
             <div className={styles.instructions}>
-              <h3>Session Mode:</h3>
+              <h3>How it works:</h3>
               <ol>
-                <li>Choose your pose style</li>
-                <li>Take up to 9 photos</li>
-                <li>Review and star your favorites</li>
-                <li>Get your photos organized instantly</li>
+                <li>Start a timed event (30min - 3hr)</li>
+                <li>Take unlimited 9-photo sessions</li>
+                <li>Each session: choose pose, capture photos, review & star favorites</li>
+                <li>See all photos from all sessions when event ends</li>
               </ol>
               
-              <h3>Event Mode:</h3>
-              <ol>
-                <li>Book a timed period (30min - 3hr)</li>
-                <li>Take unlimited photo sessions</li>
-                <li>See all photos at the end</li>
-                <li>Perfect for extended shoots</li>
-              </ol>
+              <h3>Perfect for:</h3>
+              <ul>
+                <li>Professional photo shoots</li>
+                <li>Multiple outfit changes</li>
+                <li>Group sessions</li>
+                <li>Extended creative sessions</li>
+              </ul>
             </div>
           </CardBody>
         </Card>

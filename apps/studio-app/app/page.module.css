@@ -72,7 +72,8 @@
   margin-top: 24px;
 }
 
-.instructions ol {
+.instructions ol,
+.instructions ul {
   margin: 0;
   padding-left: 24px;
   color: #555;
@@ -81,6 +82,14 @@
 .instructions li {
   margin-bottom: 8px;
   line-height: 1.6;
+}
+
+.hint {
+  font-size: 0.875rem;
+  color: var(--muted-foreground);
+  text-align: center;
+  margin: 0;
+  font-style: italic;
 }
 
 @media (max-width: 768px) {

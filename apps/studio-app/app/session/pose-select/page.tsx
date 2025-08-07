@@ -21,17 +21,22 @@ export default function PoseSelectPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
 
-  // Check for existing session
+  // Check for existing session and active event
   useEffect(() => {
-    if (!sessionLoading && session) {
-      // If there's an active session, redirect to appropriate page
-      if (session.status === 'active') {
-        router.push('/session/active');
-      } else if (session.status === 'review') {
-        router.push('/session/review');
+    if (!sessionLoading) {
+      if (session) {
+        // If there's an active session, redirect to appropriate page
+        if (session.status === 'active') {
+          router.push('/session/active');
+        } else if (session.status === 'review') {
+          router.push('/session/review');
+        }
+      } else if (!event || event.status !== 'active') {
+        // No active event - redirect to home
+        router.push('/');
       }
     }
-  }, [session, sessionLoading, router]);
+  }, [session, sessionLoading, event, router]);
 
   useEffect(() => {
     loadPoses();
@@ -79,7 +84,12 @@ export default function PoseSelectPage() {
   };
 
   const handleBack = () => {
-    router.push('/');
+    // Go back to event page if there's an active event
+    if (event && event.status === 'active') {
+      router.push('/event/active');
+    } else {
+      router.push('/');
+    }
   };
 
   const filteredPoses = selectedCategory === 'all' 

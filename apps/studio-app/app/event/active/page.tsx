@@ -36,7 +36,8 @@ export default function ActiveEventPage() {
     if (session && session.status === 'active') {
       router.push('/session/active');
     } else {
-      router.push('/');
+      // Go directly to pose selection when starting a new session
+      router.push('/session/pose-select');
     }
   };
 
