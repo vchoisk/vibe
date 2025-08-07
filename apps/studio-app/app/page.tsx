@@ -75,13 +75,6 @@ export default function Home() {
               <div className={styles.eventBanner}>
                 <h3>Event in Progress</h3>
                 <p>{event.name} • {event.clientName}</p>
-                <Button
-                  size="medium"
-                  variant="secondary"
-                  onClick={() => router.push('/event/active')}
-                >
-                  View Event Details
-                </Button>
               </div>
             ) : null}
             

@@ -7,12 +7,14 @@ import { Card, CardBody } from '@/components/Card';
 import { Toast } from '@/components/Toast';
 import { api } from '@/lib/api/client';
 import { useSession } from '@/contexts/SessionContext';
+import { useEvent } from '@/contexts/EventContext';
 import { Photo, PhotoSession } from '@snapstudio/types';
 import styles from './page.module.css';
 
 export default function ReviewPage() {
   const router = useRouter();
   const { session, isLoading: sessionLoading, updateSessionStatus } = useSession();
+  const { event } = useEvent();
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [starredPhotos, setStarredPhotos] = useState<Set<string>>(new Set());
   const [isLoadingPhotos, setIsLoadingPhotos] = useState(true);
@@ -104,9 +106,13 @@ export default function ReviewPage() {
       
       setToast({ message, type: 'success' });
       
-      // Navigate home after a short delay
+      // Navigate to event page or home after a short delay
       setTimeout(() => {
-        router.push('/');
+        if (event && event.status === 'active') {
+          router.push('/event/active');
+        } else {
+          router.push('/');
+        }
       }, 2000);
     } catch (error) {
       console.error('Failed to complete session:', error);

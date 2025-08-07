@@ -16,12 +16,36 @@ export default function ActiveEventPage() {
   const { session } = useSession();
   const [isCompleting, setIsCompleting] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  const [eventSessions, setEventSessions] = useState<any[]>([]);
+  const [isLoadingSessions, setIsLoadingSessions] = useState(false);
+  const [showPhotos, setShowPhotos] = useState(false);
 
   useEffect(() => {
     if (!event || event.status !== 'active') {
       router.push('/');
     }
   }, [event, router]);
+
+  useEffect(() => {
+    if (event && showPhotos) {
+      loadEventSessions();
+    }
+  }, [event, showPhotos]);
+
+  const loadEventSessions = async () => {
+    if (!event) return;
+    
+    setIsLoadingSessions(true);
+    try {
+      const response = await fetch(`/api/events/${event.id}/sessions`);
+      const data = await response.json();
+      setEventSessions(data.sessions || []);
+    } catch (error) {
+      console.error('Failed to load event sessions:', error);
+    } finally {
+      setIsLoadingSessions(false);
+    }
+  };
 
   const formatTime = (minutes: number) => {
     const hours = Math.floor(minutes / 60);
@@ -44,6 +68,15 @@ export default function ActiveEventPage() {
   const handleCompleteEvent = async () => {
     if (!event) return;
 
+    // Check if there's an active session that needs to be completed first
+    if (session && session.status === 'active') {
+      setToast({
+        message: 'Please complete the current photo session first.',
+        type: 'error',
+      });
+      return;
+    }
+
     setIsCompleting(true);
     try {
       const summary = await completeEvent(event.id);
@@ -59,8 +92,10 @@ export default function ActiveEventPage() {
       }, 2000);
     } catch (error) {
       console.error('Failed to complete event:', error);
+      // Show more detailed error message
+      const errorMessage = error instanceof Error ? error.message : 'Failed to complete event';
       setToast({
-        message: 'Failed to complete event. Please try again.',
+        message: errorMessage,
         type: 'error',
       });
       setIsCompleting(false);
@@ -157,6 +192,55 @@ export default function ActiveEventPage() {
             </CardBody>
           </Card>
         )}
+
+        <div className={styles.photosSection}>
+          <Button
+            variant="ghost"
+            size="medium"
+            onClick={() => setShowPhotos(!showPhotos)}
+          >
+            {showPhotos ? 'Hide' : 'Show'} All Event Photos
+          </Button>
+          
+          {showPhotos && (
+            <>
+              {isLoadingSessions ? (
+                <div className={styles.loading}>Loading photos...</div>
+              ) : eventSessions.length === 0 ? (
+                <p className={styles.noPhotos}>No photos yet. Start a session to begin!</p>
+              ) : (
+                <div className={styles.sessionsContainer}>
+                  {eventSessions.map((session, index) => (
+                    <div key={session.id} className={styles.sessionSection}>
+                      <h3 className={styles.sessionTitle}>
+                        Session {index + 1} - {session.poseName} ({session.photos.length} photos)
+                      </h3>
+                      <div className={styles.photoGrid}>
+                        {session.photos.map((photo: any) => (
+                          <div
+                            key={photo.id}
+                            className={`${styles.photoCard} ${
+                              session.starredPhotos.includes(photo.id) ? styles.starred : ''
+                            }`}
+                          >
+                            <img
+                              src={`/api/photos/${photo.id}`}
+                              alt={`Photo ${photo.id}`}
+                              className={styles.photo}
+                            />
+                            {session.starredPhotos.includes(photo.id) && (
+                              <div className={styles.starBadge}>★</div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </>
+          )}
+        </div>
 
         <div className={styles.footer}>
           <Button
