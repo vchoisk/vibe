@@ -70,6 +70,15 @@
 .photoWrapper {
   position: relative;
   aspect-ratio: 3/4;
+  overflow: hidden;
+  background: #f0f0f0;
+}
+
+.photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .photoPlaceholder {

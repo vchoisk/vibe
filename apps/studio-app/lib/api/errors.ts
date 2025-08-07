@@ -27,7 +27,16 @@ export function createErrorResponse(
   statusCode: number = 500,
   path?: string
 ): NextResponse<ApiErrorResponse> {
-  console.error(`[API Error] ${path || 'Unknown path'}:`, error);
+  // Enhanced error logging with stack trace
+  console.error(`[API Error] ${path || 'Unknown path'}:`, {
+    error: error instanceof Error ? {
+      name: error.name,
+      message: error.message,
+      stack: error.stack,
+    } : error,
+    statusCode,
+    timestamp: new Date().toISOString()
+  });
 
   // Handle known API errors
   if (error instanceof ApiError) {
@@ -36,7 +45,12 @@ export function createErrorResponse(
         error: {
           message: error.message,
           code: error.code,
-          details: error.details,
+          details: {
+            ...error.details,
+            statusCode: error.statusCode,
+            // Include stack trace in development
+            ...(process.env.NODE_ENV === 'development' && { stack: error.stack })
+          },
           timestamp: new Date().toISOString(),
           path,
         },
@@ -75,7 +89,15 @@ export function createErrorResponse(
         error: {
           message,
           code,
-          details,
+          details: {
+            ...details,
+            // Include original error info in development
+            ...(process.env.NODE_ENV === 'development' && {
+              originalError: error.message,
+              stack: error.stack,
+              name: error.name
+            })
+          },
           timestamp: new Date().toISOString(),
           path,
         },
@@ -90,7 +112,11 @@ export function createErrorResponse(
       error: {
         message: 'An unexpected error occurred. Please try again.',
         code: 'UNKNOWN_ERROR',
-        details: process.env.NODE_ENV === 'development' ? { error: String(error) } : undefined,
+        details: process.env.NODE_ENV === 'development' ? { 
+          error: String(error),
+          type: typeof error,
+          value: error
+        } : undefined,
         timestamp: new Date().toISOString(),
         path,
       },

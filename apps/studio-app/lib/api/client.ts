@@ -12,18 +12,27 @@ export class ApiClientError extends Error {
   public code: string;
   public details?: any;
   public timestamp: string;
+  public endpoint: string;
+  public method: string;
 
   constructor(
     public status: number, 
-    errorData: ErrorDetails | string
+    errorData: ErrorDetails | string,
+    endpoint: string,
+    method: string = 'GET'
   ) {
     const isErrorObject = typeof errorData === 'object';
-    super(isErrorObject ? errorData.message : errorData);
+    const baseMessage = isErrorObject ? errorData.message : errorData;
+    const fullMessage = `[${method} ${endpoint}] ${baseMessage}`;
+    
+    super(fullMessage);
     
     this.name = 'ApiClientError';
     this.code = isErrorObject ? errorData.code : 'UNKNOWN_ERROR';
     this.details = isErrorObject ? errorData.details : undefined;
     this.timestamp = isErrorObject ? errorData.timestamp : new Date().toISOString();
+    this.endpoint = endpoint;
+    this.method = method;
   }
 }
 
@@ -32,9 +41,10 @@ async function request<T>(
   options?: RequestInit
 ): Promise<T> {
   const url = `${API_BASE}${path}`;
+  const method = options?.method || 'GET';
   
   try {
-    console.log(`[API Request] ${options?.method || 'GET'} ${url}`);
+    console.log(`[API Request] ${method} ${url}`);
     const response = await fetch(url, options);
     
     if (!response.ok) {
@@ -42,21 +52,26 @@ async function request<T>(
       
       try {
         const json = await response.json();
-        errorData = json.error || json.message || JSON.stringify(json);
+        errorData = json.error || json.message || json;
+        
+        // Log detailed error info for debugging
+        console.error(`[API Error] ${method} ${path}`, {
+          status: response.status,
+          statusText: response.statusText,
+          error: errorData,
+          headers: Object.fromEntries(response.headers.entries()),
+          body: options?.body ? JSON.parse(options.body as string) : undefined
+        });
       } catch (e) {
         try {
           errorData = await response.text();
+          console.error(`[API Error] ${method} ${path} - Text response:`, errorData);
         } catch (textError) {
           errorData = `${response.status} ${response.statusText}`;
         }
       }
       
-      console.error(`[API Error] ${url}:`, {
-        status: response.status,
-        error: errorData,
-      });
-      
-      throw new ApiClientError(response.status, errorData);
+      throw new ApiClientError(response.status, errorData, path, method);
     }
     
     const data = await response.json();
@@ -67,14 +82,14 @@ async function request<T>(
       throw error;
     }
     
-    console.error(`[API Network Error] ${url}:`, error);
+    console.error(`[API Network Error] ${method} ${path}:`, error);
     throw new ApiClientError(0, {
       message: 'Network error: Unable to connect to server',
       code: 'NETWORK_ERROR',
       details: { originalError: error instanceof Error ? error.message : String(error) },
       timestamp: new Date().toISOString(),
-      path: url,
-    });
+      path: path,
+    }, path, method);
   }
 }
 

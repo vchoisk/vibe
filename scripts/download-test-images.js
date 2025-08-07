@@ -12,45 +12,15 @@ if (!fs.existsSync(testImagesDir)) {
 
 console.log(`Downloading test images to: ${testImagesDir}`);
 
-// Sample image URLs from Unsplash (portrait-style photos)
-const imageUrls = [
-  {
-    url: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=800&h=1200&fit=crop',
-    filename: 'portrait-1.jpg'
-  },
-  {
-    url: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=800&h=1200&fit=crop',
-    filename: 'portrait-2.jpg'
-  },
-  {
-    url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=800&h=1200&fit=crop',
-    filename: 'portrait-3.jpg'
-  },
-  {
-    url: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=800&h=1200&fit=crop',
-    filename: 'portrait-4.jpg'
-  },
-  {
-    url: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=800&h=1200&fit=crop',
-    filename: 'portrait-5.jpg'
-  },
-  {
-    url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&h=1200&fit=crop',
-    filename: 'portrait-6.jpg'
-  },
-  {
-    url: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=800&h=1200&fit=crop',
-    filename: 'portrait-7.jpg'
-  },
-  {
-    url: 'https://images.unsplash.com/photo-1502685104226-ee32379fefbe?w=800&h=1200&fit=crop',
-    filename: 'portrait-8.jpg'
-  },
-  {
-    url: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=800&h=1200&fit=crop',
-    filename: 'portrait-9.jpg'
-  }
-];
+// Generate Lorem Picsum URLs with different seeds for variety
+const imageUrls = [];
+for (let i = 0; i < 9; i++) {
+  const seed = Date.now() + i; // Different seed for each image
+  imageUrls.push({
+    url: `https://picsum.photos/seed/${seed}/800/1200`,
+    filename: `portrait-${i + 1}.jpg`
+  });
+}
 
 // Function to download an image
 function downloadImage(url, filepath) {

@@ -5,23 +5,18 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/Button';
 import { Card, CardBody } from '@/components/Card';
 import { api } from '@/lib/api/client';
+import { useSession } from '@/contexts/SessionContext';
 import styles from './page.module.css';
 
 export default function Home() {
   const router = useRouter();
+  const { session } = useSession();
   const [isLoading, setIsLoading] = useState(false);
   const [studioName, setStudioName] = useState('SnapStudio');
-  const [hasActiveSession, setHasActiveSession] = useState(false);
 
   useEffect(() => {
-    // Check for active session and load config
-    Promise.all([
-      api.sessions.current().catch(() => null),
-      api.config.get(),
-    ]).then(([sessionRes, configRes]) => {
-      if (sessionRes?.session) {
-        setHasActiveSession(true);
-      }
+    // Load config only (session is handled by context)
+    api.config.get().then((configRes) => {
       if (configRes?.config) {
         setStudioName(configRes.config.studioName);
       }
@@ -31,9 +26,13 @@ export default function Home() {
   const handleStartSession = async () => {
     setIsLoading(true);
     try {
-      if (hasActiveSession) {
-        // Resume existing session
-        router.push('/session/active');
+      if (session) {
+        // Resume existing session based on status
+        if (session.status === 'active') {
+          router.push('/session/active');
+        } else if (session.status === 'review') {
+          router.push('/session/review');
+        }
       } else {
         // Start new session
         router.push('/session/pose-select');
@@ -65,7 +64,7 @@ export default function Home() {
                 onClick={handleStartSession}
                 loading={isLoading}
               >
-                {hasActiveSession ? 'Resume Session' : 'Start New Session'}
+                {session ? 'Resume Session' : 'Start New Session'}
               </Button>
               
               <Button

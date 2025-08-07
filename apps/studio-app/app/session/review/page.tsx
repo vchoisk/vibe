@@ -4,43 +4,38 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/Button';
 import { Card, CardBody } from '@/components/Card';
+import { Toast } from '@/components/Toast';
 import { api } from '@/lib/api/client';
+import { useSession } from '@/contexts/SessionContext';
 import { Photo, PhotoSession } from '@snapstudio/types';
 import styles from './page.module.css';
 
 export default function ReviewPage() {
   const router = useRouter();
-  const [session, setSession] = useState<PhotoSession | null>(null);
+  const { session, isLoading: sessionLoading, updateSessionStatus } = useSession();
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [starredPhotos, setStarredPhotos] = useState<Set<string>>(new Set());
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingPhotos, setIsLoadingPhotos] = useState(true);
   const [isCompleting, setIsCompleting] = useState(false);
+  const [isReturning, setIsReturning] = useState(false);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
   useEffect(() => {
-    loadSessionAndPhotos();
-  }, []);
-
-  const loadSessionAndPhotos = async () => {
-    try {
-      const [sessionRes, photosRes] = await Promise.all([
-        api.sessions.current(),
-        api.photos.list(),
-      ]);
-
-      if (!sessionRes.session) {
-        router.push('/');
+    if (session) {
+      if (session.status === 'active') {
+        // Redirect to active page if session is not in review
+        router.push('/session/active');
         return;
       }
-
-      setSession(sessionRes.session);
-      setPhotos(photosRes.photos);
-      setStarredPhotos(new Set(sessionRes.session.starredPhotos));
-      setIsLoading(false);
-    } catch (error) {
-      console.error('Failed to load session:', error);
+      // Use photos from session object instead of making API call
+      setPhotos(session.photos || []);
+      setStarredPhotos(new Set(session.starredPhotos || []));
+      setIsLoadingPhotos(false);
+    } else if (!sessionLoading) {
+      // No session, redirect to home
       router.push('/');
     }
-  };
+  }, [session, sessionLoading, router]);
 
   const handleStarPhoto = async (photo: Photo) => {
     const isStarred = starredPhotos.has(photo.id);
@@ -69,41 +64,72 @@ export default function ReviewPage() {
     }
   };
 
-  const handleStarAll = () => {
+  const handleStarAll = async () => {
     const newStarredSet = new Set(photos.map((p) => p.id));
     setStarredPhotos(newStarredSet);
     
     // Update all photos
-    photos.forEach((photo) => {
-      api.photos.star(photo.id, true).catch(console.error);
-    });
+    try {
+      await Promise.all(photos.map((photo) => 
+        api.photos.star(photo.id, true)
+      ));
+    } catch (error) {
+      console.error('Failed to star all photos:', error);
+    }
   };
 
-  const handleClearAll = () => {
+  const handleClearAll = async () => {
     setStarredPhotos(new Set());
     
     // Update all photos
-    photos.forEach((photo) => {
-      api.photos.star(photo.id, false).catch(console.error);
-    });
+    try {
+      await Promise.all(photos.map((photo) => 
+        api.photos.star(photo.id, false)
+      ));
+    } catch (error) {
+      console.error('Failed to clear all stars:', error);
+    }
   };
 
   const handleComplete = async () => {
     setIsCompleting(true);
     try {
       const response = await api.sessions.complete();
-      router.push('/session/complete');
+      
+      // Show success message
+      const starredCount = response.starredCount || 0;
+      const message = starredCount > 0
+        ? `Session complete! ${starredCount} photo${starredCount === 1 ? '' : 's'} saved to your output folder.`
+        : 'Session complete! No photos were saved.';
+      
+      setToast({ message, type: 'success' });
+      
+      // Navigate home after a short delay
+      setTimeout(() => {
+        router.push('/');
+      }, 2000);
     } catch (error) {
       console.error('Failed to complete session:', error);
+      setToast({ message: 'Failed to complete session. Please try again.', type: 'error' });
       setIsCompleting(false);
     }
   };
 
-  const handleBackToPhotos = () => {
-    router.push('/session/active');
+  const handleBackToPhotos = async () => {
+    if (isReturning) return; // Prevent multiple clicks
+    
+    setIsReturning(true);
+    try {
+      // Update session status back to 'active' before navigating
+      await updateSessionStatus('active');
+      router.push('/session/active');
+    } catch (error) {
+      console.error('Failed to update session status:', error);
+      setIsReturning(false);
+    }
   };
 
-  if (isLoading || !session) {
+  if (sessionLoading || isLoadingPhotos || !session) {
     return (
       <main className={styles.main}>
         <div className={styles.loading}>Loading photos...</div>
@@ -142,10 +168,11 @@ export default function ReviewPage() {
               }`}
             >
               <div className={styles.photoWrapper}>
-                {/* In production, this would show the actual photo */}
-                <div className={styles.photoPlaceholder}>
-                  Photo {photos.indexOf(photo) + 1}
-                </div>
+                <img
+                  src={`/api/photos/${photo.id}`}
+                  alt={`Photo ${photos.indexOf(photo) + 1}`}
+                  className={styles.photo}
+                />
                 <button
                   className={styles.starButton}
                   onClick={() => handleStarPhoto(photo)}
@@ -179,6 +206,8 @@ export default function ReviewPage() {
                     variant="ghost"
                     size="medium"
                     onClick={handleBackToPhotos}
+                    loading={isReturning}
+                    disabled={isReturning}
                   >
                     Take More Photos
                   </Button>
@@ -197,6 +226,14 @@ export default function ReviewPage() {
           </Card>
         </div>
       </div>
+      
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
     </main>
   );
 }

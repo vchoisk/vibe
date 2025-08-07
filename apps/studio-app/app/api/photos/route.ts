@@ -59,7 +59,12 @@ export async function GET(request: NextRequest) {
       throw errors.notFound('No active session found');
     }
 
-    console.log(`[API] Get photos for current session ${currentSession.id}: ${currentSession.photos.length} photos`);
+    // Allow fetching photos for sessions in review status as well
+    if (currentSession.status !== 'active' && currentSession.status !== 'review') {
+      throw errors.badRequest('Session is not in an active or review state');
+    }
+
+    console.log(`[API] Get photos for current session ${currentSession.id} (${currentSession.status}): ${currentSession.photos.length} photos`);
 
     return NextResponse.json({ 
       photos: currentSession.photos,

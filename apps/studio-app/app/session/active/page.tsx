@@ -6,91 +6,68 @@ import { Button } from '@/components/Button';
 import { Card, CardBody } from '@/components/Card';
 import { PhotoPreview } from '@/components/PhotoPreview';
 import { ErrorMessage } from '@/components/ErrorMessage';
+import DebugSidebar from '@/components/DebugSidebar';
 import { api, ApiClientError } from '@/lib/api/client';
 import { useSocket } from '@/lib/hooks/useSocket';
+import { useSession } from '@/contexts/SessionContext';
 import { PhotoSession, Photo } from '@snapstudio/types';
 import styles from './page.module.css';
 
 export default function ActiveSessionPage() {
   const router = useRouter();
   const { on, off, isConnected } = useSocket();
-  const [session, setSession] = useState<PhotoSession | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const { session, isLoading: sessionLoading, error: sessionError, updateSessionStatus } = useSession();
   const [error, setError] = useState<Error | null>(null);
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [previewIndex, setPreviewIndex] = useState<number>(-1);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [isDebugOpen, setIsDebugOpen] = useState(false);
+  const [isTakingFakePhoto, setIsTakingFakePhoto] = useState(false);
 
   useEffect(() => {
-    loadSession();
-
-    // Set up WebSocket listeners
-    on('new-photo', (photo: Photo) => {
-      console.log('New photo received:', photo);
-      setPhotos((prev) => [...prev, photo]);
-    });
-
-    on('session-updated', (updatedSession: PhotoSession) => {
-      console.log('Session updated:', updatedSession);
-      setSession(updatedSession);
-      setPhotos(updatedSession.photos || []);
-      
-      // Auto-redirect to review when session is in review status
-      if (updatedSession.status === 'review') {
+    // Check session status and redirect if needed
+    if (session) {
+      if (session.status === 'review') {
+        console.log('Session is in review status, redirecting...');
         router.push('/session/review');
-      }
-    });
-
-    return () => {
-      off('new-photo');
-      off('session-updated');
-    };
-  }, [on, off, router]);
-
-  const loadSession = async () => {
-    try {
-      setError(null);
-      const response = await api.sessions.current();
-      
-      if (!response.session) {
-        console.log('No active session found, redirecting to home');
-        router.push('/');
         return;
       }
-      
-      console.log('Loaded session:', response.session.id);
-      setSession(response.session);
-      setPhotos(response.session.photos || []);
-    } catch (err) {
-      console.error('Failed to load session:', err);
-      setError(err as Error);
-      
-      // Only redirect to home if it's a 404 (no session)
-      if (err instanceof ApiClientError && err.code === 'NO_ACTIVE_SESSION') {
-        setTimeout(() => router.push('/'), 2000);
-      }
-    } finally {
-      setIsLoading(false);
+      // Initialize photos from session
+      setPhotos(session.photos || []);
+    } else if (!sessionLoading) {
+      console.log('No active session, redirecting to home');
+      router.push('/');
     }
-  };
+  }, [session, sessionLoading, router]);
+
+  useEffect(() => {
+    // Set up WebSocket listeners for photos only
+    const handleNewPhoto = (photo: Photo) => {
+      console.log('New photo received:', photo);
+      setPhotos((prev) => [...prev, photo]);
+    };
+
+    on('new-photo', handleNewPhoto);
+
+    return () => {
+      off('new-photo', handleNewPhoto);
+    };
+  }, [on, off]);
+
+  // Combine errors
+  const displayError = error || sessionError;
 
 
   const handleSkipToReview = async () => {
     try {
       setError(null);
       console.log('Updating session status to review...');
-      await api.sessions.updateStatus('review');
+      await updateSessionStatus('review');
       console.log('Session updated, navigating to review page');
       router.push('/session/review');
     } catch (err) {
       console.error('Failed to update session:', err);
       setError(err as Error);
-      
-      // If no session found, redirect to home
-      if (err instanceof ApiClientError && err.code === 'NOT_FOUND') {
-        alert('Session has been lost. Returning to home page.');
-        router.push('/');
-      }
     }
   };
 
@@ -108,8 +85,11 @@ export default function ActiveSessionPage() {
   };
 
   const handleAddTestPhoto = async () => {
+    if (isTakingFakePhoto) return; // Prevent multiple simultaneous requests
+    
     try {
       setError(null);
+      setIsTakingFakePhoto(true);
       console.log('Creating test photo...');
       
       const response = await api.test.createPhoto();
@@ -119,6 +99,8 @@ export default function ActiveSessionPage() {
     } catch (err) {
       console.error('Failed to add test photo:', err);
       setError(err as Error);
+    } finally {
+      setIsTakingFakePhoto(false);
     }
   };
 
@@ -138,7 +120,7 @@ export default function ActiveSessionPage() {
     setPreviewIndex(index);
   };
 
-  if (isLoading) {
+  if (sessionLoading) {
     return (
       <main className={styles.main}>
         <div className={styles.loading}>Loading session...</div>
@@ -146,13 +128,13 @@ export default function ActiveSessionPage() {
     );
   }
 
-  if (error) {
+  if (displayError) {
     return (
       <main className={styles.main}>
         <div className={styles.container}>
           <ErrorMessage 
-            error={error} 
-            onRetry={loadSession}
+            error={displayError} 
+            onRetry={() => window.location.reload()}
           />
         </div>
       </main>
@@ -176,6 +158,17 @@ export default function ActiveSessionPage() {
 
   return (
     <main className={styles.main}>
+      {/* Debug button - only show in development */}
+      {process.env.NODE_ENV === 'development' && (
+        <button 
+          className={styles.debugToggle}
+          onClick={() => setIsDebugOpen(true)}
+          aria-label="Open debug tools"
+        >
+          Debug
+        </button>
+      )}
+
       <div className={styles.container}>
         <div className={styles.header}>
           <h1 className={styles.title}>{session.poseName} Session</h1>
@@ -260,17 +253,6 @@ export default function ActiveSessionPage() {
           >
             Cancel Session
           </Button>
-          {/* Test button for development */}
-          {process.env.NODE_ENV === 'development' && (
-            <Button
-              variant="secondary"
-              size="medium"
-              onClick={handleAddTestPhoto}
-              disabled={photoCount >= session.maxPhotos}
-            >
-              Add Test Photo
-            </Button>
-          )}
         </div>
 
         <div className={styles.waitingMessage}>
@@ -291,6 +273,14 @@ export default function ActiveSessionPage() {
         isOpen={isPreviewOpen}
         onClose={handleClosePreview}
         onNavigate={handleNavigatePreview}
+      />
+
+      {/* Debug Sidebar */}
+      <DebugSidebar
+        isOpen={isDebugOpen}
+        onClose={() => setIsDebugOpen(false)}
+        onTakeFakePhoto={photoCount < session.maxPhotos ? handleAddTestPhoto : undefined}
+        isTakingPhoto={isTakingFakePhoto}
       />
     </main>
   );

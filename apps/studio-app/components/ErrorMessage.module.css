@@ -70,3 +70,41 @@
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(0, 102, 204, 0.2);
 }
+
+.errorEndpoint {
+  background: #f3f4f6;
+  border-radius: 6px;
+  padding: 8px 12px;
+  margin: 12px 0;
+  font-size: 0.875rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.errorEndpoint code {
+  font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+  font-weight: 500;
+  color: #1f2937;
+}
+
+.statusCode {
+  color: #6b7280;
+  font-size: 0.813rem;
+  border-left: 1px solid #d1d5db;
+  padding-left: 12px;
+}
+
+.errorCode {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin: 8px 0;
+}
+
+.errorCode code {
+  background: #f3f4f6;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+  color: #374151;
+}

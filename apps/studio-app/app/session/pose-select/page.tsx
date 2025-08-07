@@ -5,17 +5,31 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/Button';
 import { Card, CardBody } from '@/components/Card';
 import { api } from '@/lib/api/client';
+import { useSession } from '@/contexts/SessionContext';
 import { Pose } from '@snapstudio/types';
 import styles from './page.module.css';
 
 export default function PoseSelectPage() {
   const router = useRouter();
+  const { session, isLoading: sessionLoading } = useSession();
   const [poses, setPoses] = useState<Pose[]>([]);
   const [categories, setCategories] = useState<Array<{ name: string; count: number }>>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedPose, setSelectedPose] = useState<Pose | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
+
+  // Check for existing session
+  useEffect(() => {
+    if (!sessionLoading && session) {
+      // If there's an active session, redirect to appropriate page
+      if (session.status === 'active') {
+        router.push('/session/active');
+      } else if (session.status === 'review') {
+        router.push('/session/review');
+      }
+    }
+  }, [session, sessionLoading, router]);
 
   useEffect(() => {
     loadPoses();
@@ -43,10 +57,16 @@ export default function PoseSelectPage() {
 
     setIsCreating(true);
     try {
-      await api.sessions.create(selectedPose.id);
+      const response = await api.sessions.create(selectedPose.id);
+      console.log('Session created:', response);
+      
+      // Small delay to ensure WebSocket updates are received
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
       router.push('/session/active');
     } catch (error) {
       console.error('Failed to create session:', error);
+      alert('Failed to create session. Please try again.');
       setIsCreating(false);
     }
   };
@@ -58,6 +78,15 @@ export default function PoseSelectPage() {
   const filteredPoses = selectedCategory === 'all' 
     ? poses 
     : poses.filter(p => p.category === selectedCategory);
+
+  // Don't render until we've checked for existing sessions
+  if (sessionLoading) {
+    return (
+      <main className={styles.main}>
+        <div className={styles.loading}>Loading...</div>
+      </main>
+    );
+  }
 
   return (
     <main className={styles.main}>
