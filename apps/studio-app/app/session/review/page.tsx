@@ -95,6 +95,10 @@ export default function ReviewPage() {
 
   const handleComplete = async () => {
     setIsCompleting(true);
+    
+    // Store event info before completing session
+    const hasActiveEvent = event && event.status === 'active';
+    
     try {
       const response = await api.sessions.complete();
       
@@ -106,14 +110,16 @@ export default function ReviewPage() {
       
       setToast({ message, type: 'success' });
       
-      // Navigate to event page or home after a short delay
-      setTimeout(() => {
-        if (event && event.status === 'active') {
-          router.push('/event/active');
-        } else {
+      // Navigate directly to event page if there's an active event
+      if (hasActiveEvent) {
+        // Navigate immediately without delay for better UX
+        router.push('/event/active');
+      } else {
+        // Only delay for home navigation
+        setTimeout(() => {
           router.push('/');
-        }
-      }, 2000);
+        }, 2000);
+      }
     } catch (error) {
       console.error('Failed to complete session:', error);
       setToast({ message: 'Failed to complete session. Please try again.', type: 'error' });

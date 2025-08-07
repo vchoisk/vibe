@@ -154,7 +154,26 @@
 
 .photosSection {
   margin: 2rem 0;
-  text-align: center;
+}
+
+.photosSectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.photosSectionTitle {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.photoFilters {
+  display: flex;
+  gap: 0.5rem;
 }
 
 .loading {
@@ -243,5 +262,16 @@
   
   .photoGrid {
     grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  }
+  
+  .photosSectionHeader {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: flex-start;
+  }
+  
+  .photoFilters {
+    width: 100%;
+    justify-content: center;
   }
 }

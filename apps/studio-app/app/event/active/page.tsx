@@ -18,7 +18,7 @@ export default function ActiveEventPage() {
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const [eventSessions, setEventSessions] = useState<any[]>([]);
   const [isLoadingSessions, setIsLoadingSessions] = useState(false);
-  const [showPhotos, setShowPhotos] = useState(false);
+  const [photoFilter, setPhotoFilter] = useState<'all' | 'starred'>('all');
 
   useEffect(() => {
     if (!event || event.status !== 'active') {
@@ -27,10 +27,17 @@ export default function ActiveEventPage() {
   }, [event, router]);
 
   useEffect(() => {
-    if (event && showPhotos) {
+    if (event) {
       loadEventSessions();
     }
-  }, [event, showPhotos]);
+  }, [event]);
+
+  // Reload sessions when session completes
+  useEffect(() => {
+    if (event && !session) {
+      loadEventSessions();
+    }
+  }, [session, event]);
 
   const loadEventSessions = async () => {
     if (!event) return;
@@ -194,51 +201,68 @@ export default function ActiveEventPage() {
         )}
 
         <div className={styles.photosSection}>
-          <Button
-            variant="ghost"
-            size="medium"
-            onClick={() => setShowPhotos(!showPhotos)}
-          >
-            {showPhotos ? 'Hide' : 'Show'} All Event Photos
-          </Button>
+          <div className={styles.photosSectionHeader}>
+            <h2 className={styles.photosSectionTitle}>Event Photos</h2>
+            <div className={styles.photoFilters}>
+              <Button
+                variant={photoFilter === 'all' ? 'primary' : 'ghost'}
+                size="small"
+                onClick={() => setPhotoFilter('all')}
+              >
+                All Photos
+              </Button>
+              <Button
+                variant={photoFilter === 'starred' ? 'primary' : 'ghost'}
+                size="small"
+                onClick={() => setPhotoFilter('starred')}
+              >
+                ★ Starred Only
+              </Button>
+            </div>
+          </div>
           
-          {showPhotos && (
-            <>
-              {isLoadingSessions ? (
-                <div className={styles.loading}>Loading photos...</div>
-              ) : eventSessions.length === 0 ? (
-                <p className={styles.noPhotos}>No photos yet. Start a session to begin!</p>
-              ) : (
-                <div className={styles.sessionsContainer}>
-                  {eventSessions.map((session, index) => (
-                    <div key={session.id} className={styles.sessionSection}>
-                      <h3 className={styles.sessionTitle}>
-                        Session {index + 1} - {session.poseName} ({session.photos.length} photos)
-                      </h3>
-                      <div className={styles.photoGrid}>
-                        {session.photos.map((photo: any) => (
-                          <div
-                            key={photo.id}
-                            className={`${styles.photoCard} ${
-                              session.starredPhotos.includes(photo.id) ? styles.starred : ''
-                            }`}
-                          >
-                            <img
-                              src={`/api/photos/${photo.id}`}
-                              alt={`Photo ${photo.id}`}
-                              className={styles.photo}
-                            />
-                            {session.starredPhotos.includes(photo.id) && (
-                              <div className={styles.starBadge}>★</div>
-                            )}
-                          </div>
-                        ))}
-                      </div>
+          {isLoadingSessions ? (
+            <div className={styles.loading}>Loading photos...</div>
+          ) : eventSessions.length === 0 ? (
+            <p className={styles.noPhotos}>No photos yet. Start a session to begin!</p>
+          ) : (
+            <div className={styles.sessionsContainer}>
+              {eventSessions.map((session, index) => {
+                const filteredPhotos = photoFilter === 'starred' 
+                  ? session.photos.filter((photo: any) => session.starredPhotos.includes(photo.id))
+                  : session.photos;
+                
+                // Skip sessions with no photos matching the filter
+                if (filteredPhotos.length === 0) return null;
+                
+                return (
+                  <div key={session.id} className={styles.sessionSection}>
+                    <h3 className={styles.sessionTitle}>
+                      Session {index + 1} - {session.poseName} ({filteredPhotos.length} {photoFilter === 'starred' ? 'starred ' : ''}photos)
+                    </h3>
+                    <div className={styles.photoGrid}>
+                      {filteredPhotos.map((photo: any) => (
+                        <div
+                          key={photo.id}
+                          className={`${styles.photoCard} ${
+                            session.starredPhotos.includes(photo.id) ? styles.starred : ''
+                          }`}
+                        >
+                          <img
+                            src={`/api/photos/${photo.id}`}
+                            alt={`Photo ${photo.id}`}
+                            className={styles.photo}
+                          />
+                          {session.starredPhotos.includes(photo.id) && (
+                            <div className={styles.starBadge}>★</div>
+                          )}
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
-              )}
-            </>
+                  </div>
+                );
+              })}
+            </div>
           )}
         </div>
 
