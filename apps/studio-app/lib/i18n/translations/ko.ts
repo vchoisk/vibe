@@ -15,6 +15,8 @@ export const ko: Translations = {
     complete: '완료',
     settings: '설정',
     backToHome: '홈으로 돌아가기',
+    photoStarred: '사진 별표 표시됨',
+    photoUnstarred: '사진 별표 해제됨',
   },
   
   home: {
@@ -144,6 +146,7 @@ export const ko: Translations = {
     noActiveSession: '활성 세션이 없습니다.',
     shootNotFound: '촬영을 찾을 수 없습니다.',
     failedToCompleteShoot: '촬영 완료 실패',
+    failedToStarPhoto: '사진 별표 표시 실패',
   },
   
   poseSelect: {

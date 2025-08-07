@@ -22,6 +22,7 @@ export default function ActiveShootPage() {
   const [shootSessions, setShootSessions] = useState<any[]>([]);
   const [isLoadingSessions, setIsLoadingSessions] = useState(false);
   const [photoFilter, setPhotoFilter] = useState<'all' | 'starred'>('all');
+  const [starringPhoto, setStarringPhoto] = useState<string | null>(null);
 
   useEffect(() => {
     if (!shoot || shoot.status !== 'active') {
@@ -64,6 +65,61 @@ export default function ActiveShootPage() {
       return `${hours}h ${mins}m`;
     }
     return `${mins}m`;
+  };
+
+  const handleStarPhoto = async (photoId: string, sessionId: string, currentlyStarred: boolean) => {
+    if (starringPhoto) return; // Prevent multiple simultaneous requests
+    
+    setStarringPhoto(photoId);
+    try {
+      // Call the star API
+      await api.photos.star(photoId, !currentlyStarred);
+      
+      // Update local state
+      setShootSessions(prevSessions => 
+        prevSessions.map(session => {
+          if (session.id === sessionId) {
+            const updatedStarredPhotos = currentlyStarred
+              ? session.starredPhotos.filter((id: string) => id !== photoId)
+              : [...session.starredPhotos, photoId];
+            
+            // Update the photo's starred status
+            const updatedPhotos = session.photos.map((photo: any) => 
+              photo.id === photoId ? { ...photo, starred: !currentlyStarred } : photo
+            );
+            
+            return {
+              ...session,
+              starredPhotos: updatedStarredPhotos,
+              photos: updatedPhotos
+            };
+          }
+          return session;
+        })
+      );
+
+      // Update shoot total starred count if needed
+      if (shoot) {
+        const newStarredCount = currentlyStarred 
+          ? shoot.totalStarredPhotos - 1 
+          : shoot.totalStarredPhotos + 1;
+        
+        // This would need to be persisted to the server
+        // For now, just show success
+        setToast({
+          message: currentlyStarred ? t.common.photoUnstarred : t.common.photoStarred,
+          type: 'success'
+        });
+      }
+    } catch (error) {
+      console.error('Failed to star photo:', error);
+      setToast({
+        message: t.errors.failedToStarPhoto,
+        type: 'error'
+      });
+    } finally {
+      setStarringPhoto(null);
+    }
   };
 
   const handleStartSession = () => {
@@ -245,23 +301,29 @@ export default function ActiveShootPage() {
                       {t.shoot.sessionLabel} {index + 1} - {session.poseName} ({filteredPhotos.length} {photoFilter === 'starred' ? t.shoot.starredPhotosLabel.toLowerCase() : t.shoot.photosLabel.toLowerCase()})
                     </h3>
                     <div className={styles.photoGrid}>
-                      {filteredPhotos.map((photo: any) => (
-                        <div
-                          key={photo.id}
-                          className={`${styles.photoCard} ${
-                            session.starredPhotos.includes(photo.id) ? styles.starred : ''
-                          }`}
-                        >
-                          <img
-                            src={`/api/photos/${photo.id}`}
-                            alt={`Photo ${photo.id}`}
-                            className={styles.photo}
-                          />
-                          {session.starredPhotos.includes(photo.id) && (
-                            <div className={styles.starBadge}>★</div>
-                          )}
-                        </div>
-                      ))}
+                      {filteredPhotos.map((photo: any) => {
+                        const isStarred = session.starredPhotos.includes(photo.id);
+                        return (
+                          <div
+                            key={photo.id}
+                            className={`${styles.photoCard} ${isStarred ? styles.starred : ''}`}
+                          >
+                            <img
+                              src={`/api/photos/${photo.id}`}
+                              alt={`Photo ${photo.id}`}
+                              className={styles.photo}
+                            />
+                            <button
+                              className={styles.starButton}
+                              onClick={() => handleStarPhoto(photo.id, session.id, isStarred)}
+                              disabled={starringPhoto === photo.id}
+                              aria-label={isStarred ? t.review.unstarPhoto : t.review.starPhoto}
+                            >
+                              {isStarred ? '★' : '☆'}
+                            </button>
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 );

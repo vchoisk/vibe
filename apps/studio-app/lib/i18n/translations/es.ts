@@ -15,6 +15,8 @@ export const es: Translations = {
     complete: 'Completar',
     settings: 'Configuración',
     backToHome: 'Volver al Inicio',
+    photoStarred: 'Foto marcada',
+    photoUnstarred: 'Foto desmarcada',
   },
   
   home: {
@@ -144,6 +146,7 @@ export const es: Translations = {
     noActiveSession: 'No hay sesión activa.',
     shootNotFound: 'Sesión no encontrada.',
     failedToCompleteShoot: 'Error al completar la sesión',
+    failedToStarPhoto: 'Error al marcar la foto',
   },
   
   poseSelect: {

@@ -15,6 +15,8 @@ export const zh: Translations = {
     complete: '完成',
     settings: '设置',
     backToHome: '返回主页',
+    photoStarred: '照片已收藏',
+    photoUnstarred: '照片已取消收藏',
   },
   
   home: {
@@ -144,6 +146,7 @@ export const zh: Translations = {
     noActiveSession: '没有活动会话。',
     shootNotFound: '找不到拍摄。',
     failedToCompleteShoot: '无法完成拍摄',
+    failedToStarPhoto: '收藏照片失败',
   },
   
   poseSelect: {

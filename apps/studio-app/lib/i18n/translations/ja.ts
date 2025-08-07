@@ -15,6 +15,8 @@ export const ja: Translations = {
     complete: '完了',
     settings: '設定',
     backToHome: 'ホームに戻る',
+    photoStarred: '写真にスターを付けました',
+    photoUnstarred: '写真のスターを外しました',
   },
   
   home: {
@@ -144,6 +146,7 @@ export const ja: Translations = {
     noActiveSession: 'アクティブなセッションがありません。',
     shootNotFound: '撮影が見つかりません。',
     failedToCompleteShoot: '撮影を完了できませんでした',
+    failedToStarPhoto: '写真のスター付けに失敗しました',
   },
   
   poseSelect: {

@@ -32,6 +32,8 @@ export interface Translations {
     complete: string;
     settings: string;
     backToHome: string;
+    photoStarred: string;
+    photoUnstarred: string;
   };
   
   // Home page
@@ -148,6 +150,7 @@ export interface Translations {
     noActiveSession: string;
     shootNotFound: string;
     failedToCompleteShoot: string;
+    failedToStarPhoto: string;
   };
   
   // Pose selection

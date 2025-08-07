@@ -15,6 +15,8 @@ export const en: Translations = {
     complete: 'Complete',
     settings: 'Settings',
     backToHome: 'Back to Home',
+    photoStarred: 'Photo starred',
+    photoUnstarred: 'Photo unstarred',
   },
   
   home: {
@@ -144,6 +146,7 @@ export const en: Translations = {
     noActiveSession: 'No active session found.',
     shootNotFound: 'Shoot not found.',
     failedToCompleteShoot: 'Failed to complete shoot',
+    failedToStarPhoto: 'Failed to star photo',
   },
   
   poseSelect: {

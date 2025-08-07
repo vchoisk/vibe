@@ -4,6 +4,7 @@ import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/Button';
 import { Card, CardBody } from '@/components/Card';
+import { Toast } from '@/components/Toast';
 import { PageLayout } from '@/components/PageLayout';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { api } from '@/lib/api/client';
@@ -21,6 +22,8 @@ function ShootSummaryContent() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedSessionIndex, setSelectedSessionIndex] = useState(0);
+  const [starringPhoto, setStarringPhoto] = useState<string | null>(null);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
   useEffect(() => {
     if (shootId) {
@@ -66,6 +69,75 @@ function ShootSummaryContent() {
 
   const handleBackHome = () => {
     router.push('/');
+  };
+
+  const handleStarPhoto = async (photoId: string, currentlyStarred: boolean) => {
+    if (starringPhoto) return; // Prevent multiple simultaneous requests
+    
+    setStarringPhoto(photoId);
+    try {
+      // Call the star API
+      await api.photos.star(photoId, !currentlyStarred);
+      
+      // Update local state - modify the summary
+      setSummary(prevSummary => {
+        if (!prevSummary) return prevSummary;
+        
+        const updatedSessionDetails = prevSummary.sessionDetails.map(session => {
+          // Check if this photo belongs to this session
+          const photoInSession = session.photos.find((p: any) => p.id === photoId);
+          if (photoInSession) {
+            const updatedStarredPhotos = currentlyStarred
+              ? session.starredPhotos.filter((id: string) => id !== photoId)
+              : [...session.starredPhotos, photoId];
+            
+            return {
+              ...session,
+              starredPhotos: updatedStarredPhotos
+            };
+          }
+          return session;
+        });
+
+        // Update total starred photos count
+        const newTotalStarred = currentlyStarred 
+          ? prevSummary.totalStarredPhotos - 1 
+          : prevSummary.totalStarredPhotos + 1;
+
+        return {
+          ...prevSummary,
+          sessionDetails: updatedSessionDetails,
+          totalStarredPhotos: newTotalStarred
+        };
+      });
+
+      // Update shoot state as well
+      setShoot(prevShoot => {
+        if (!prevShoot) return prevShoot;
+        
+        const newStarredCount = currentlyStarred 
+          ? prevShoot.totalStarredPhotos - 1 
+          : prevShoot.totalStarredPhotos + 1;
+        
+        return {
+          ...prevShoot,
+          totalStarredPhotos: newStarredCount
+        };
+      });
+
+      setToast({
+        message: currentlyStarred ? t.common.photoUnstarred : t.common.photoStarred,
+        type: 'success'
+      });
+    } catch (error) {
+      console.error('Failed to star photo:', error);
+      setToast({
+        message: t.errors.failedToStarPhoto,
+        type: 'error'
+      });
+    } finally {
+      setStarringPhoto(null);
+    }
   };
 
   if (isLoading) {
@@ -141,25 +213,31 @@ function ShootSummaryContent() {
 
             {currentSession && (
               <div className={styles.photoGrid}>
-                {currentSession.photos.map((photo) => (
-                  <div
-                    key={photo.id}
-                    className={`${styles.photoCard} ${
-                      currentSession.starredPhotos.includes(photo.id) ? styles.starred : ''
-                    }`}
-                  >
-                    <div className={styles.photoWrapper}>
-                      <img
-                        src={`/api/photos/${photo.id}`}
-                        alt={`Photo ${photo.id}`}
-                        className={styles.photo}
-                      />
-                      {currentSession.starredPhotos.includes(photo.id) && (
-                        <div className={styles.starBadge}>★</div>
-                      )}
+                {currentSession.photos.map((photo) => {
+                  const isStarred = currentSession.starredPhotos.includes(photo.id);
+                  return (
+                    <div
+                      key={photo.id}
+                      className={`${styles.photoCard} ${isStarred ? styles.starred : ''}`}
+                    >
+                      <div className={styles.photoWrapper}>
+                        <img
+                          src={`/api/photos/${photo.id}`}
+                          alt={`Photo ${photo.id}`}
+                          className={styles.photo}
+                        />
+                        <button
+                          className={styles.starButton}
+                          onClick={() => handleStarPhoto(photo.id, isStarred)}
+                          disabled={starringPhoto === photo.id}
+                          aria-label={isStarred ? t.review.unstarPhoto : t.review.starPhoto}
+                        >
+                          {isStarred ? '★' : '☆'}
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </>
@@ -195,6 +273,14 @@ function ShootSummaryContent() {
           </Button>
         </div>
       </div>
+
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
     </main>
   );
 }
