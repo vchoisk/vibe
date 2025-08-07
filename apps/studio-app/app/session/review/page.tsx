@@ -33,11 +33,11 @@ export default function ReviewPage() {
       setPhotos(session.photos || []);
       setStarredPhotos(new Set(session.starredPhotos || []));
       setIsLoadingPhotos(false);
-    } else if (!sessionLoading) {
-      // No session, redirect to home
+    } else if (!sessionLoading && !isCompleting) {
+      // No session and not completing, redirect to home
       router.push('/');
     }
-  }, [session, sessionLoading, router]);
+  }, [session, sessionLoading, router, isCompleting]);
 
   const handleStarPhoto = async (photo: Photo) => {
     const isStarred = starredPhotos.has(photo.id);
@@ -115,6 +115,7 @@ export default function ReviewPage() {
         // Navigate immediately without delay for better UX
         router.push('/event/active');
       } else {
+
         // Only delay for home navigation
         setTimeout(() => {
           router.push('/');
