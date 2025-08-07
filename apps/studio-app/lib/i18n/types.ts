@@ -121,7 +121,6 @@ export interface Translations {
     photos: string;
     cancelSession: string;
     waitingForPhotos: string;
-    connectionLost: string;
     cancelConfirm: string;
   };
   

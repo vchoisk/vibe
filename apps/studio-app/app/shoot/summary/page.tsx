@@ -7,6 +7,7 @@ import { Card, CardBody } from '@/components/Card';
 import { Toast } from '@/components/Toast';
 import { PageLayout } from '@/components/PageLayout';
 import { JoinPhoneModal } from '@/components/JoinPhoneModal';
+import { useSocket } from '@/lib/hooks/useSocket';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { api } from '@/lib/api/client';
 import { Shoot, ShootSummary } from '@snapstudio/types';
@@ -16,6 +17,7 @@ function ShootSummaryContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { t } = useLanguage();
+  const { on, off } = useSocket();
   const shootId = searchParams.get('id');
   
   const [shoot, setShoot] = useState<Shoot | null>(null);
@@ -34,6 +36,48 @@ function ShootSummaryContent() {
       router.push('/');
     }
   }, [shootId, router]);
+
+  // Listen for star updates from WebSocket
+  useEffect(() => {
+    const handlePhotoStarred = (data: { photoId: string; starred: boolean }) => {
+      // Update summary session details
+      setSummary(prev => {
+        if (!prev) return prev;
+        
+        const updatedSessions = prev.sessionDetails.map((session: any) => {
+          const photoInSession = session.photos?.find((p: any) => p.id === data.photoId);
+          if (photoInSession) {
+            const updatedStarredPhotos = data.starred
+              ? [...(session.starredPhotos || []), data.photoId]
+              : (session.starredPhotos || []).filter((id: string) => id !== data.photoId);
+            
+            return {
+              ...session,
+              starredPhotos: updatedStarredPhotos
+            };
+          }
+          return session;
+        });
+        
+        // Update total starred count
+        const totalStarred = updatedSessions.reduce((sum: number, s: any) => 
+          sum + (s.starredPhotos?.length || 0), 0
+        );
+        
+        return {
+          ...prev,
+          sessionDetails: updatedSessions,
+          totalStarredPhotos: totalStarred
+        };
+      });
+    };
+
+    on('photo-starred', handlePhotoStarred);
+
+    return () => {
+      off('photo-starred', handlePhotoStarred);
+    };
+  }, [on, off]);
 
   const loadShootSummary = async () => {
     try {

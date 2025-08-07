@@ -10,6 +10,7 @@ import { useSession } from '@/contexts/SessionContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { PageLayout } from '@/components/PageLayout';
 import { JoinPhoneModal } from '@/components/JoinPhoneModal';
+import { useSocket } from '@/lib/hooks/useSocket';
 import { api } from '@/lib/api/client';
 import styles from './page.module.css';
 
@@ -18,6 +19,7 @@ export default function ActiveShootPage() {
   const { shoot, remainingMinutes, completeShoot } = useShoot();
   const { session } = useSession();
   const { t } = useLanguage();
+  const { on, off } = useSocket();
   const [isCompleting, setIsCompleting] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const [shootSessions, setShootSessions] = useState<any[]>([]);
@@ -44,6 +46,40 @@ export default function ActiveShootPage() {
       loadShootSessions();
     }
   }, [session, shoot]);
+
+  // Listen for star updates from WebSocket
+  useEffect(() => {
+    const handlePhotoStarred = (data: { photoId: string; starred: boolean }) => {
+      // Update local state when star event is received
+      setShootSessions(prevSessions => 
+        prevSessions.map(session => {
+          const photoInSession = session.photos?.find((p: any) => p.id === data.photoId);
+          if (photoInSession) {
+            const updatedStarredPhotos = data.starred
+              ? [...(session.starredPhotos || []), data.photoId]
+              : (session.starredPhotos || []).filter((id: string) => id !== data.photoId);
+            
+            const updatedPhotos = session.photos.map((photo: any) => 
+              photo.id === data.photoId ? { ...photo, starred: data.starred } : photo
+            );
+            
+            return {
+              ...session,
+              starredPhotos: updatedStarredPhotos,
+              photos: updatedPhotos
+            };
+          }
+          return session;
+        })
+      );
+    };
+
+    on('photo-starred', handlePhotoStarred);
+
+    return () => {
+      off('photo-starred', handlePhotoStarred);
+    };
+  }, [on, off]);
 
   const loadShootSessions = async () => {
     if (!shoot) return;

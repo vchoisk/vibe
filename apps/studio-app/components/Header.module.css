@@ -48,18 +48,3 @@
   transform: scale(0.95);
 }
 
-/* Dark mode support */
-@media (prefers-color-scheme: dark) {
-  .header {
-    background: rgba(26, 26, 26, 0.95);
-    border-bottom-color: var(--border-color-dark, #333);
-  }
-  
-  .backButton {
-    color: var(--text-primary-dark, #fff);
-  }
-  
-  .backButton:hover {
-    background: var(--background-hover-dark, #2a2a2a);
-  }
-}

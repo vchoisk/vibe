@@ -161,6 +161,42 @@ setupDirectories().then(() => {
       console.log('Client disconnected:', socket.id);
     });
 
+    // Handle join-shoot event to join a shoot room
+    socket.on('join-shoot', (data) => {
+      if (data.shootId) {
+        socket.join(`shoot-${data.shootId}`);
+        console.log(`Client ${socket.id} joined shoot room: shoot-${data.shootId}`);
+      }
+    });
+
+    // Handle leave-shoot event
+    socket.on('leave-shoot', (data) => {
+      if (data.shootId) {
+        socket.leave(`shoot-${data.shootId}`);
+        console.log(`Client ${socket.id} left shoot room: shoot-${data.shootId}`);
+      }
+    });
+
+    // Handle star-photo event from clients
+    socket.on('star-photo', (data) => {
+      console.log('Star photo event received:', data);
+      // Broadcast to all clients in the shoot room
+      if (data.shootId) {
+        socket.to(`shoot-${data.shootId}`).emit('photo-starred', {
+          photoId: data.photoId,
+          starred: data.starred,
+          sessionId: data.sessionId
+        });
+      } else {
+        // Fallback to broadcast to all clients
+        socket.broadcast.emit('photo-starred', {
+          photoId: data.photoId,
+          starred: data.starred,
+          sessionId: data.sessionId
+        });
+      }
+    });
+
     // Send current session state to new connections
     const currentSession = sessionManager.getCurrentSession();
     if (currentSession) {

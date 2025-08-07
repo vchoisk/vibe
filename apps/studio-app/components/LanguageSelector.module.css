@@ -35,19 +35,3 @@
   color: var(--text-secondary, #666);
 }
 
-/* Dark mode support */
-@media (prefers-color-scheme: dark) {
-  .selector {
-    background-color: var(--background-secondary, #1a1a1a);
-    border-color: var(--border-color-dark, #333);
-    color: var(--text-primary-dark, #fff);
-  }
-  
-  .selector:hover {
-    border-color: var(--primary-dark, #4d94ff);
-  }
-  
-  .icon {
-    color: var(--text-secondary-dark, #999);
-  }
-}

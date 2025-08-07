@@ -7,6 +7,7 @@ import { Card, CardBody } from '@/components/Card';
 import { Toast } from '@/components/Toast';
 import { PageLayout } from '@/components/PageLayout';
 import { JoinPhoneModal } from '@/components/JoinPhoneModal';
+import { useSocket } from '@/lib/hooks/useSocket';
 import { api } from '@/lib/api/client';
 import { useSession } from '@/contexts/SessionContext';
 import { useShoot } from '@/contexts/ShootContext';
@@ -19,6 +20,7 @@ export default function ReviewPage() {
   const { session, isLoading: sessionLoading, updateSessionStatus } = useSession();
   const { shoot } = useShoot();
   const { t } = useLanguage();
+  const { on, off } = useSocket();
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [starredPhotos, setStarredPhotos] = useState<Set<string>>(new Set());
   const [isLoadingPhotos, setIsLoadingPhotos] = useState(true);
@@ -47,6 +49,28 @@ export default function ReviewPage() {
       router.push(navigateTo);
     }
   }, [session, sessionLoading, router]);
+
+  // Listen for star updates from WebSocket
+  useEffect(() => {
+    const handlePhotoStarred = (data: { photoId: string; starred: boolean }) => {
+      // Update local state when star event is received
+      setStarredPhotos(prev => {
+        const newSet = new Set(prev);
+        if (data.starred) {
+          newSet.add(data.photoId);
+        } else {
+          newSet.delete(data.photoId);
+        }
+        return newSet;
+      });
+    };
+
+    on('photo-starred', handlePhotoStarred);
+
+    return () => {
+      off('photo-starred', handlePhotoStarred);
+    };
+  }, [on, off]);
 
   const handleStarPhoto = async (photo: Photo) => {
     const isStarred = starredPhotos.has(photo.id);
