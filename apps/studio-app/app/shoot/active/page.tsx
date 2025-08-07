@@ -7,6 +7,7 @@ import { Card, CardBody } from '@/components/Card';
 import { Toast } from '@/components/Toast';
 import { useShoot } from '@/contexts/ShootContext';
 import { useSession } from '@/contexts/SessionContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { api } from '@/lib/api/client';
 import styles from './page.module.css';
 
@@ -14,6 +15,7 @@ export default function ActiveShootPage() {
   const router = useRouter();
   const { shoot, remainingMinutes, completeShoot } = useShoot();
   const { session } = useSession();
+  const { t } = useLanguage();
   const [isCompleting, setIsCompleting] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const [shootSessions, setShootSessions] = useState<any[]>([]);

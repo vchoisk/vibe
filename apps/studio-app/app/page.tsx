@@ -7,12 +7,15 @@ import { Card, CardBody } from '@/components/Card';
 import { api } from '@/lib/api/client';
 import { useSession } from '@/contexts/SessionContext';
 import { useShoot } from '@/contexts/ShootContext';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { LanguageSelector } from '@/components/LanguageSelector';
 import styles from './page.module.css';
 
 export default function Home() {
   const router = useRouter();
   const { session } = useSession();
   const { shoot } = useShoot();
+  const { t } = useLanguage();
   const [isLoading, setIsLoading] = useState(false);
   const [studioName, setStudioName] = useState('SnapStudio');
 
@@ -40,7 +43,7 @@ export default function Home() {
         router.push('/shoot/active');
       } else {
         // No active shoot - sessions can only be started from shoots
-        alert('Please start a shoot first to begin photo sessions.');
+        alert(t.errors.noActiveShoot);
         setIsLoading(false);
       }
     } catch (error) {
@@ -63,17 +66,20 @@ export default function Home() {
 
   return (
     <main className={styles.main}>
+      <div className={styles.languageSelector}>
+        <LanguageSelector />
+      </div>
       <div className={styles.container}>
         <Card className={styles.welcomeCard}>
           <CardBody>
-            <h1 className={styles.title}>Welcome to {studioName}</h1>
+            <h1 className={styles.title}>{t.home.welcome}</h1>
             <p className={styles.subtitle}>
-              Professional self-service photo studio
+              {t.home.subtitle}
             </p>
             
             {shoot && shoot.status === 'active' ? (
               <div className={styles.shootBanner}>
-                <h3>Shoot in Progress</h3>
+                <h3>{t.home.shootInProgress}</h3>
                 <p>{shoot.name} • {shoot.clientName}</p>
               </div>
             ) : null}
@@ -86,7 +92,7 @@ export default function Home() {
                   onClick={handleStartSession}
                   loading={isLoading}
                 >
-                  Resume Session
+                  {t.home.resumeSession}
                 </Button>
               ) : null}
               
@@ -96,12 +102,12 @@ export default function Home() {
                 fullWidth
                 onClick={handleStartShoot}
               >
-                {shoot && shoot.status === 'active' ? 'Manage Shoot' : 'Start Timed Shoot'}
+                {shoot && shoot.status === 'active' ? t.home.manageShoot : t.home.startShoot}
               </Button>
               
               {!shoot || shoot.status !== 'active' ? (
                 <p className={styles.hint}>
-                  Start a shoot to begin taking photo sessions
+                  {t.home.startShootHint}
                 </p>
               ) : null}
               
@@ -111,25 +117,23 @@ export default function Home() {
                 fullWidth
                 onClick={handleSettings}
               >
-                Studio Settings
+                {t.home.studioSettings}
               </Button>
             </div>
 
             <div className={styles.instructions}>
-              <h3>How it works:</h3>
+              <h3>{t.home.howItWorks}</h3>
               <ol>
-                <li>Start a timed shoot (30min - 3hr)</li>
-                <li>Take unlimited 9-photo sessions</li>
-                <li>Each session: choose pose, capture photos, review & star favorites</li>
-                <li>See all photos from all sessions when shoot ends</li>
+                {t.home.howItWorksSteps.map((step, index) => (
+                  <li key={index}>{step}</li>
+                ))}
               </ol>
               
-              <h3>Perfect for:</h3>
+              <h3>{t.home.perfectFor}</h3>
               <ul>
-                <li>Professional photo shoots</li>
-                <li>Multiple outfit changes</li>
-                <li>Group sessions</li>
-                <li>Extended creative sessions</li>
+                {t.home.perfectForItems.map((item, index) => (
+                  <li key={index}>{item}</li>
+                ))}
               </ul>
             </div>
           </CardBody>

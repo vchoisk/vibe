@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { SessionProvider } from "@/contexts/SessionContext";
 import { ShootProvider } from "@/contexts/ShootContext";
+import { LanguageProvider } from "@/contexts/LanguageContext";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -16,11 +17,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <ShootProvider>
-          <SessionProvider>
-            {children}
-          </SessionProvider>
-        </ShootProvider>
+        <LanguageProvider>
+          <ShootProvider>
+            <SessionProvider>
+              {children}
+            </SessionProvider>
+          </ShootProvider>
+        </LanguageProvider>
       </body>
     </html>
   );

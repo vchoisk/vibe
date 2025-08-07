@@ -5,19 +5,21 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/Button';
 import { Card, CardBody } from '@/components/Card';
 import { useShoot } from '@/contexts/ShootContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import styles from './page.module.css';
 
 const DURATION_OPTIONS = [
-  { value: 30, label: '30 minutes', price: 50 },
-  { value: 60, label: '1 hour', price: 90 },
-  { value: 90, label: '1.5 hours', price: 130 },
-  { value: 120, label: '2 hours', price: 160 },
-  { value: 180, label: '3 hours', price: 220 },
+  { value: 30, labelKey: 'minutes', count: 30, price: 50 },
+  { value: 60, labelKey: 'hour', count: 1, price: 90 },
+  { value: 90, labelKey: 'hours', count: 1.5, price: 130 },
+  { value: 120, labelKey: 'hours', count: 2, price: 160 },
+  { value: 180, labelKey: 'hours', count: 3, price: 220 },
 ];
 
 export default function NewShootPage() {
   const router = useRouter();
   const { createShoot, startShoot } = useShoot();
+  const { t } = useLanguage();
   const [clientName, setClientName] = useState('');
   const [shootName, setShootName] = useState('');
   const [duration, setDuration] = useState(60);
@@ -30,7 +32,7 @@ export default function NewShootPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!clientName.trim()) {
-      setError('Client name is required');
+      setError(t.errors.required);
       return;
     }
 
@@ -39,12 +41,12 @@ export default function NewShootPage() {
 
     try {
       const shoot = await createShoot({
-        name: shootName || `${clientName}'s Session`,
+        name: shootName || `${clientName}'s ${t.shoot.newShoot}`,
         clientName,
         durationMinutes: duration,
         notes: notes.trim() || undefined,
         pricePackage: selectedPackage ? {
-          name: selectedPackage.label,
+          name: `${selectedPackage.count} ${selectedPackage.labelKey === 'minutes' ? t.shoot.minutes : selectedPackage.labelKey === 'hour' ? t.shoot.hour : t.shoot.hours}`,
           durationMinutes: selectedPackage.value,
           price: selectedPackage.price,
         } : undefined,
@@ -66,9 +68,9 @@ export default function NewShootPage() {
     <main className={styles.main}>
       <div className={styles.container}>
         <div className={styles.header}>
-          <h1 className={styles.title}>Start New Shoot</h1>
+          <h1 className={styles.title}>{t.shoot.newShoot}</h1>
           <p className={styles.subtitle}>
-            Create a timed photo shoot for your client
+            {t.shoot.createShootSubtitle}
           </p>
         </div>
 
@@ -77,7 +79,7 @@ export default function NewShootPage() {
             <form onSubmit={handleSubmit} className={styles.form}>
               <div className={styles.formGroup}>
                 <label htmlFor="clientName" className={styles.label}>
-                  Client Name <span className={styles.required}>*</span>
+                  {t.shoot.clientName} <span className={styles.required}>*</span>
                 </label>
                 <input
                   id="clientName"
@@ -85,14 +87,14 @@ export default function NewShootPage() {
                   value={clientName}
                   onChange={(e) => setClientName(e.target.value)}
                   className={styles.input}
-                  placeholder="Enter client name"
+                  placeholder={t.shoot.clientName}
                   required
                 />
               </div>
 
               <div className={styles.formGroup}>
                 <label htmlFor="shootName" className={styles.label}>
-                  Shoot Name (optional)
+                  {t.shoot.shootName}
                 </label>
                 <input
                   id="shootName"
@@ -100,13 +102,13 @@ export default function NewShootPage() {
                   value={shootName}
                   onChange={(e) => setShootName(e.target.value)}
                   className={styles.input}
-                  placeholder="e.g., Birthday Photoshoot"
+                  placeholder={t.shoot.shootName}
                 />
               </div>
 
               <div className={styles.formGroup}>
                 <label htmlFor="duration" className={styles.label}>
-                  Duration
+                  {t.shoot.duration}
                 </label>
                 <select
                   id="duration"
@@ -116,7 +118,7 @@ export default function NewShootPage() {
                 >
                   {DURATION_OPTIONS.map(option => (
                     <option key={option.value} value={option.value}>
-                      {option.label} - ${option.price}
+                      {option.count} {option.labelKey === 'minutes' ? t.shoot.minutes : option.labelKey === 'hour' ? t.shoot.hour : t.shoot.hours} - ${option.price}
                     </option>
                   ))}
                 </select>
@@ -124,14 +126,14 @@ export default function NewShootPage() {
 
               <div className={styles.formGroup}>
                 <label htmlFor="notes" className={styles.label}>
-                  Notes (optional)
+                  {t.shoot.notes}
                 </label>
                 <textarea
                   id="notes"
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   className={styles.textarea}
-                  placeholder="Any special requests or notes..."
+                  placeholder={t.shoot.notes}
                   rows={3}
                 />
               </div>
@@ -150,7 +152,7 @@ export default function NewShootPage() {
                   onClick={() => router.push('/')}
                   disabled={isCreating}
                 >
-                  Cancel
+                  {t.common.cancel}
                 </Button>
                 <Button
                   type="submit"
@@ -159,7 +161,7 @@ export default function NewShootPage() {
                   loading={isCreating}
                   disabled={isCreating}
                 >
-                  Start Shoot
+                  {t.common.start}
                 </Button>
               </div>
             </form>
