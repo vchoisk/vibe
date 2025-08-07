@@ -34,8 +34,12 @@ export default function ReviewPage() {
       setStarredPhotos(new Set(session.starredPhotos || []));
       setIsLoadingPhotos(false);
     } else if (!sessionLoading) {
+      // Store event info and determine navigation before completing session
+      const hasActiveEvent = event && event.status === 'active';
+      const navigateTo = hasActiveEvent ? '/event/active' : '/';
+      
       // No session, redirect to home
-      router.push('/');
+      router.push(navigateTo);
     }
   }, [session, sessionLoading, router]);
 
@@ -98,7 +102,6 @@ export default function ReviewPage() {
     
     // Store event info and determine navigation before completing session
     const hasActiveEvent = event && event.status === 'active';
-    const navigateTo = hasActiveEvent ? '/event/active' : '/';
     
     try {
       // If navigating to event page, do it immediately to avoid redirect race

@@ -85,18 +85,18 @@ export default function ActiveEventPage() {
     }
 
     setIsCompleting(true);
+    
+    // Store event ID before completing (event will be cleared from context)
+    const eventId = event.id;
+    
     try {
-      const summary = await completeEvent(event.id);
+      // Navigate immediately to avoid redirect race
+      router.push(`/event/summary?id=${eventId}`);
       
-      setToast({
-        message: `Event completed! ${summary.totalPhotos} photos from ${summary.totalSessions} sessions.`,
-        type: 'success',
-      });
-
-      // Navigate to summary page after delay
-      setTimeout(() => {
-        router.push(`/event/summary?id=${event.id}`);
-      }, 2000);
+      const summary = await completeEvent(eventId);
+      
+      // Toast will show on the summary page
+      console.log(`Event completed! ${summary.totalPhotos} photos from ${summary.totalSessions} sessions.`);
     } catch (error) {
       console.error('Failed to complete event:', error);
       // Show more detailed error message
@@ -106,6 +106,9 @@ export default function ActiveEventPage() {
         type: 'error',
       });
       setIsCompleting(false);
+      
+      // Navigate back to event page on error
+      router.push('/event/active');
     }
   };
 
