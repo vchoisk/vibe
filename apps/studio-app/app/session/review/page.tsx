@@ -7,14 +7,14 @@ import { Card, CardBody } from '@/components/Card';
 import { Toast } from '@/components/Toast';
 import { api } from '@/lib/api/client';
 import { useSession } from '@/contexts/SessionContext';
-import { useEvent } from '@/contexts/EventContext';
+import { useShoot } from '@/contexts/ShootContext';
 import { Photo, PhotoSession } from '@snapstudio/types';
 import styles from './page.module.css';
 
 export default function ReviewPage() {
   const router = useRouter();
   const { session, isLoading: sessionLoading, updateSessionStatus } = useSession();
-  const { event } = useEvent();
+  const { shoot } = useShoot();
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [starredPhotos, setStarredPhotos] = useState<Set<string>>(new Set());
   const [isLoadingPhotos, setIsLoadingPhotos] = useState(true);
@@ -34,9 +34,9 @@ export default function ReviewPage() {
       setStarredPhotos(new Set(session.starredPhotos || []));
       setIsLoadingPhotos(false);
     } else if (!sessionLoading) {
-      // Store event info and determine navigation before completing session
-      const hasActiveEvent = event && event.status === 'active';
-      const navigateTo = hasActiveEvent ? '/event/active' : '/';
+      // Store shoot info and determine navigation before completing session
+      const hasActiveShoot = shoot && shoot.status === 'active';
+      const navigateTo = hasActiveShoot ? '/shoot/active' : '/';
       
       // No session, redirect to home
       router.push(navigateTo);
@@ -100,13 +100,13 @@ export default function ReviewPage() {
   const handleComplete = async () => {
     setIsCompleting(true);
     
-    // Store event info and determine navigation before completing session
-    const hasActiveEvent = event && event.status === 'active';
+    // Store shoot info and determine navigation before completing session
+    const hasActiveShoot = shoot && shoot.status === 'active';
     
     try {
-      // If navigating to event page, do it immediately to avoid redirect race
-      if (hasActiveEvent) {
-        router.push('/event/active');
+      // If navigating to shoot page, do it immediately to avoid redirect race
+      if (hasActiveShoot) {
+        router.push('/shoot/active');
       }
       
       const response = await api.sessions.complete();
@@ -119,8 +119,8 @@ export default function ReviewPage() {
       
       setToast({ message, type: 'success' });
       
-      // Only navigate home after delay if not going to event
-      if (!hasActiveEvent) {
+      // Only navigate home after delay if not going to shoot
+      if (!hasActiveShoot) {
         setTimeout(() => {
           router.push('/');
         }, 2000);
@@ -130,15 +130,15 @@ export default function ReviewPage() {
       setToast({ message: 'Failed to complete session. Please try again.', type: 'error' });
       setIsCompleting(false);
       
-      // If we navigated to event but completion failed, go back
-      if (hasActiveEvent) {
+      // If we navigated to shoot but completion failed, go back
+      if (hasActiveShoot) {
         router.push('/session/review');
       }
     }
   };
 
   const handleBackToPhotos = async () => {
-    if (isReturning) return; // Prevent multiple clicks
+    if (isReturning) return; // Prshoot multiple clicks
     
     setIsReturning(true);
     try {

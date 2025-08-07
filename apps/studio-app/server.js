@@ -3,7 +3,7 @@ const { parse } = require('url');
 const next = require('next');
 const { Server } = require('socket.io');
 const { PhotoMonitor } = require('@snapstudio/file-manager');
-const { SessionManager, EventManager } = require('@snapstudio/session-manager');
+const { SessionManager, ShootManager } = require('@snapstudio/session-manager');
 const { defaultConfig, getPaths } = require('@snapstudio/config');
 const { setupDirectories } = require('./lib/setup');
 
@@ -17,7 +17,7 @@ const handle = app.getRequestHandler();
 // Initialize managers
 let photoMonitor = null;
 let sessionManager = null;
-let eventManager = null;
+let shootManager = null;
 let io = null;
 
 // Setup directories before starting
@@ -50,7 +50,7 @@ setupDirectories().then(() => {
     maxSessionTime: defaultConfig.maxSessionTime,
   });
   
-  eventManager = new EventManager({
+  shootManager = new ShootManager({
     dataDirectory: getPaths().appData,
   });
   
@@ -97,11 +97,11 @@ setupDirectories().then(() => {
     photoMonitor.startWatching(session.id);
     io.emit('session-created', session);
     
-    // If part of an event, update the event
-    if (session.eventId) {
-      const currentEvent = eventManager.getCurrentEvent();
-      if (currentEvent && currentEvent.id === session.eventId) {
-        await eventManager.addSessionToEvent(session.eventId, session.id);
+    // If part of a shoot, update the shoot
+    if (session.shootId) {
+      const currentShoot = shootManager.getCurrentShoot();
+      if (currentShoot && currentShoot.id === session.shootId) {
+        await shootManager.addSessionToShoot(session.shootId, session.id);
       }
     }
   });
@@ -116,13 +116,13 @@ setupDirectories().then(() => {
     photoMonitor.stopWatching();
     io.emit('session-completed', { sessionId: session.id });
     
-    // Update event photo counts if part of an event
-    if (session.eventId) {
-      const event = await eventManager.getEvent(session.eventId);
-      if (event) {
-        await eventManager.updateEvent(session.eventId, {
-          totalPhotos: event.totalPhotos + session.photos.length,
-          totalStarredPhotos: event.totalStarredPhotos + session.starredPhotos.length,
+    // Update shoot photo counts if part of a shoot
+    if (session.shootId) {
+      const shoot = await shootManager.getShoot(session.shootId);
+      if (shoot) {
+        await shootManager.updateShoot(session.shootId, {
+          totalPhotos: shoot.totalPhotos + session.photos.length,
+          totalStarredPhotos: shoot.totalStarredPhotos + session.starredPhotos.length,
         });
       }
     }
@@ -133,24 +133,24 @@ setupDirectories().then(() => {
     io.emit('session-updated', session);
   });
 
-  // Set up event manager events
-  eventManager.on('event-started', (event) => {
-    console.log('Event started:', event.id);
-    io.emit('event-started', event);
+  // Set up shoot manager events
+  shootManager.on('shoot-started', (shoot) => {
+    console.log('Shoot started:', shoot.id);
+    io.emit('shoot-started', shoot);
   });
 
-  eventManager.on('event-updated', (event) => {
-    io.emit('event-updated', event);
+  shootManager.on('shoot-updated', (shoot) => {
+    io.emit('shoot-updated', shoot);
   });
 
-  eventManager.on('event-completed', (summary) => {
-    console.log('Event completed:', summary.eventId);
-    io.emit('event-completed', summary);
+  shootManager.on('shoot-completed', (summary) => {
+    console.log('Shoot completed:', summary.shootId);
+    io.emit('shoot-completed', summary);
   });
 
-  eventManager.on('event-overtime', (event) => {
-    console.log('Event overtime:', event.id);
-    io.emit('event-overtime', event);
+  shootManager.on('shoot-overtime', (shoot) => {
+    console.log('Shoot overtime:', shoot.id);
+    io.emit('shoot-overtime', shoot);
   });
 
   // Socket.IO connection handling
@@ -167,17 +167,17 @@ setupDirectories().then(() => {
       socket.emit('session-updated', currentSession);
     }
     
-    // Send current event state to new connections
-    const currentEvent = eventManager.getCurrentEvent();
-    if (currentEvent) {
-      socket.emit('event-updated', currentEvent);
+    // Send current shoot state to new connections
+    const currentShoot = shootManager.getCurrentShoot();
+    if (currentShoot) {
+      socket.emit('shoot-updated', currentShoot);
     }
   });
 
   // Make managers available globally for API routes
   globalThis.photoMonitor = photoMonitor;
   globalThis.sessionManager = sessionManager;
-  globalThis.eventManager = eventManager;
+  globalThis.shootManager = shootManager;
   globalThis.io = io;
 
   server.listen(port, hostname, () => {

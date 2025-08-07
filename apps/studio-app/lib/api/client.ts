@@ -137,11 +137,11 @@ export const api = {
     current: () =>
       request<{ session: any }>('/sessions/current'),
     
-    create: (poseId: string, outputDirectory?: string, eventId?: string) =>
+    create: (poseId: string, outputDirectory?: string, shootId?: string) =>
       request<{ session: any }>('/sessions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ poseId, outputDirectory, eventId }),
+        body: JSON.stringify({ poseId, outputDirectory, shootId }),
       }),
     
     updateStatus: (status: string) =>
@@ -187,10 +187,10 @@ export const api = {
       }),
   },
   
-  // Events
-  events: {
+  // Shoots
+  shoots: {
     list: () =>
-      request<{ events: any[] }>('/events'),
+      request<{ shoots: any[] }>('/shoots'),
     
     create: (data: {
       name: string;
@@ -203,32 +203,32 @@ export const api = {
         price: number;
       };
     }) =>
-      request<{ event: any }>('/events', {
+      request<{ shoot: any }>('/shoots', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       }),
     
     current: () =>
-      request<{ event: any; remainingMinutes: number }>('/events/current'),
+      request<{ shoot: any; remainingMinutes: number }>('/shoots/current'),
     
     get: (id: string) =>
-      request<{ event: any }>(`/events/${id}`),
+      request<{ shoot: any }>(`/shoots/${id}`),
     
     update: (id: string, data: any) =>
-      request<{ event: any }>(`/events/${id}`, {
+      request<{ shoot: any }>(`/shoots/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       }),
     
     start: (id: string) =>
-      request<{ event: any }>(`/events/${id}/start`, {
+      request<{ shoot: any }>(`/shoots/${id}/start`, {
         method: 'POST',
       }),
     
     complete: (id: string) =>
-      request<{ summary: any }>(`/events/${id}/complete`, {
+      request<{ summary: any }>(`/shoots/${id}/complete`, {
         method: 'POST',
       }),
   },

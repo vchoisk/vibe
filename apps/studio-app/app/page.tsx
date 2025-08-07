@@ -6,13 +6,13 @@ import { Button } from '@/components/Button';
 import { Card, CardBody } from '@/components/Card';
 import { api } from '@/lib/api/client';
 import { useSession } from '@/contexts/SessionContext';
-import { useEvent } from '@/contexts/EventContext';
+import { useShoot } from '@/contexts/ShootContext';
 import styles from './page.module.css';
 
 export default function Home() {
   const router = useRouter();
   const { session } = useSession();
-  const { event } = useEvent();
+  const { shoot } = useShoot();
   const [isLoading, setIsLoading] = useState(false);
   const [studioName, setStudioName] = useState('SnapStudio');
 
@@ -35,12 +35,12 @@ export default function Home() {
         } else if (session.status === 'review') {
           router.push('/session/review');
         }
-      } else if (event && event.status === 'active') {
-        // If there's an active event, redirect to event page to start session
-        router.push('/event/active');
+      } else if (shoot && shoot.status === 'active') {
+        // If there's an active shoot, redirect to shoot page to start session
+        router.push('/shoot/active');
       } else {
-        // No active event - sessions can only be started from events
-        alert('Please start an event first to begin photo sessions.');
+        // No active shoot - sessions can only be started from shoots
+        alert('Please start a shoot first to begin photo sessions.');
         setIsLoading(false);
       }
     } catch (error) {
@@ -49,11 +49,11 @@ export default function Home() {
     }
   };
 
-  const handleStartEvent = () => {
-    if (event && event.status === 'active') {
-      router.push('/event/active');
+  const handleStartShoot = () => {
+    if (shoot && shoot.status === 'active') {
+      router.push('/shoot/active');
     } else {
-      router.push('/event/new');
+      router.push('/shoot/new');
     }
   };
 
@@ -71,10 +71,10 @@ export default function Home() {
               Professional self-service photo studio
             </p>
             
-            {event && event.status === 'active' ? (
-              <div className={styles.eventBanner}>
-                <h3>Event in Progress</h3>
-                <p>{event.name} • {event.clientName}</p>
+            {shoot && shoot.status === 'active' ? (
+              <div className={styles.shootBanner}>
+                <h3>Shoot in Progress</h3>
+                <p>{shoot.name} • {shoot.clientName}</p>
               </div>
             ) : null}
             
@@ -94,14 +94,14 @@ export default function Home() {
                 variant="primary"
                 size="large"
                 fullWidth
-                onClick={handleStartEvent}
+                onClick={handleStartShoot}
               >
-                {event && event.status === 'active' ? 'Manage Event' : 'Start Timed Event'}
+                {shoot && shoot.status === 'active' ? 'Manage Shoot' : 'Start Timed Shoot'}
               </Button>
               
-              {!event || event.status !== 'active' ? (
+              {!shoot || shoot.status !== 'active' ? (
                 <p className={styles.hint}>
-                  Start an event to begin taking photo sessions
+                  Start a shoot to begin taking photo sessions
                 </p>
               ) : null}
               
@@ -118,10 +118,10 @@ export default function Home() {
             <div className={styles.instructions}>
               <h3>How it works:</h3>
               <ol>
-                <li>Start a timed event (30min - 3hr)</li>
+                <li>Start a timed shoot (30min - 3hr)</li>
                 <li>Take unlimited 9-photo sessions</li>
                 <li>Each session: choose pose, capture photos, review & star favorites</li>
-                <li>See all photos from all sessions when event ends</li>
+                <li>See all photos from all sessions when shoot ends</li>
               </ol>
               
               <h3>Perfect for:</h3>

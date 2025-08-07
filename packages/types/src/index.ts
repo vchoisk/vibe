@@ -20,7 +20,7 @@ export interface PhotoSession {
   starredPhotos: string[];
   status: 'active' | 'review' | 'complete';
   outputDirectory: string;
-  eventId?: string; // Associated event ID if part of an event
+  shootId?: string; // Associated shoot ID if part of a shoot
 }
 
 export interface StudioConfig {
@@ -60,7 +60,7 @@ export interface AppState {
   };
 }
 
-export interface Event {
+export interface Shoot {
   id: string;
   name: string;
   clientName: string;
@@ -82,8 +82,8 @@ export interface Event {
   };
 }
 
-export interface EventSummary {
-  eventId: string;
+export interface ShootSummary {
+  shootId: string;
   totalSessions: number;
   totalPhotos: number;
   totalStarredPhotos: number;
@@ -101,7 +101,7 @@ export interface SocketEvents {
   'session-updated': PhotoSession;
   'session-completed': { sessionId: string };
   'session-created': PhotoSession;
-  'event-started': Event;
-  'event-updated': Event;
-  'event-completed': EventSummary;
+  'shoot-started': Shoot;
+  'shoot-updated': Shoot;
+  'shoot-completed': ShootSummary;
 }

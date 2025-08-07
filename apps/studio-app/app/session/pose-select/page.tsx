@@ -6,14 +6,14 @@ import { Button } from '@/components/Button';
 import { Card, CardBody } from '@/components/Card';
 import { api } from '@/lib/api/client';
 import { useSession } from '@/contexts/SessionContext';
-import { useEvent } from '@/contexts/EventContext';
+import { useShoot } from '@/contexts/ShootContext';
 import { Pose } from '@snapstudio/types';
 import styles from './page.module.css';
 
 export default function PoseSelectPage() {
   const router = useRouter();
   const { session, isLoading: sessionLoading } = useSession();
-  const { event } = useEvent();
+  const { shoot } = useShoot();
   const [poses, setPoses] = useState<Pose[]>([]);
   const [categories, setCategories] = useState<Array<{ name: string; count: number }>>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
@@ -21,7 +21,7 @@ export default function PoseSelectPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
 
-  // Check for existing session and active event
+  // Check for existing session and active shoot
   useEffect(() => {
     if (!sessionLoading) {
       if (session) {
@@ -31,12 +31,12 @@ export default function PoseSelectPage() {
         } else if (session.status === 'review') {
           router.push('/session/review');
         }
-      } else if (!event || event.status !== 'active') {
-        // No active event - redirect to home
+      } else if (!shoot || shoot.status !== 'active') {
+        // No active shoot - redirect to home
         router.push('/');
       }
     }
-  }, [session, sessionLoading, event, router]);
+  }, [session, sessionLoading, shoot, router]);
 
   useEffect(() => {
     loadPoses();
@@ -64,11 +64,11 @@ export default function PoseSelectPage() {
 
     setIsCreating(true);
     try {
-      // Pass eventId if we're within an active event
+      // Pass shootId if we're within an active shoot
       const response = await api.sessions.create(
         selectedPose.id, 
         undefined,
-        event && event.status === 'active' ? event.id : undefined
+        shoot && shoot.status === 'active' ? shoot.id : undefined
       );
       console.log('Session created:', response);
       
@@ -84,9 +84,9 @@ export default function PoseSelectPage() {
   };
 
   const handleBack = () => {
-    // Go back to event page if there's an active event
-    if (event && event.status === 'active') {
-      router.push('/event/active');
+    // Go back to shoot page if there's an active shoot
+    if (shoot && shoot.status === 'active') {
+      router.push('/shoot/active');
     } else {
       router.push('/');
     }
@@ -114,8 +114,8 @@ export default function PoseSelectPage() {
           </Button>
           <h1 className={styles.title}>Choose Your Pose Style</h1>
           <p className={styles.subtitle}>
-            {event && event.status === 'active' 
-              ? `Select a pose for ${event.clientName}'s session`
+            {shoot && shoot.status === 'active' 
+              ? `Select a pose for ${shoot.clientName}'s session`
               : 'Select a pose to start your 9-photo session'}
           </p>
         </div>

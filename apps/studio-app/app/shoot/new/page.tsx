@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/Button';
 import { Card, CardBody } from '@/components/Card';
-import { useEvent } from '@/contexts/EventContext';
+import { useShoot } from '@/contexts/ShootContext';
 import styles from './page.module.css';
 
 const DURATION_OPTIONS = [
@@ -15,11 +15,11 @@ const DURATION_OPTIONS = [
   { value: 180, label: '3 hours', price: 220 },
 ];
 
-export default function NewEventPage() {
+export default function NewShootPage() {
   const router = useRouter();
-  const { createEvent, startEvent } = useEvent();
+  const { createShoot, startShoot } = useShoot();
   const [clientName, setClientName] = useState('');
-  const [eventName, setEventName] = useState('');
+  const [shootName, setShootName] = useState('');
   const [duration, setDuration] = useState(60);
   const [notes, setNotes] = useState('');
   const [isCreating, setIsCreating] = useState(false);
@@ -38,8 +38,8 @@ export default function NewEventPage() {
     setError(null);
 
     try {
-      const event = await createEvent({
-        name: eventName || `${clientName}'s Session`,
+      const shoot = await createShoot({
+        name: shootName || `${clientName}'s Session`,
         clientName,
         durationMinutes: duration,
         notes: notes.trim() || undefined,
@@ -50,14 +50,14 @@ export default function NewEventPage() {
         } : undefined,
       });
 
-      // Auto-start the event
-      await startEvent(event.id);
+      // Auto-start the shoot
+      await startShoot(shoot.id);
       
-      // Navigate to active event page
-      router.push('/event/active');
+      // Navigate to active shoot page
+      router.push('/shoot/active');
     } catch (err) {
-      console.error('Failed to create event:', err);
-      setError(err instanceof Error ? err.message : 'Failed to create event');
+      console.error('Failed to create shoot:', err);
+      setError(err instanceof Error ? err.message : 'Failed to create shoot');
       setIsCreating(false);
     }
   };
@@ -66,9 +66,9 @@ export default function NewEventPage() {
     <main className={styles.main}>
       <div className={styles.container}>
         <div className={styles.header}>
-          <h1 className={styles.title}>Start New Event</h1>
+          <h1 className={styles.title}>Start New Shoot</h1>
           <p className={styles.subtitle}>
-            Create a timed photo session event for your client
+            Create a timed photo shoot for your client
           </p>
         </div>
 
@@ -91,14 +91,14 @@ export default function NewEventPage() {
               </div>
 
               <div className={styles.formGroup}>
-                <label htmlFor="eventName" className={styles.label}>
-                  Event Name (optional)
+                <label htmlFor="shootName" className={styles.label}>
+                  Shoot Name (optional)
                 </label>
                 <input
-                  id="eventName"
+                  id="shootName"
                   type="text"
-                  value={eventName}
-                  onChange={(e) => setEventName(e.target.value)}
+                  value={shootName}
+                  onChange={(e) => setShootName(e.target.value)}
                   className={styles.input}
                   placeholder="e.g., Birthday Photoshoot"
                 />
@@ -159,7 +159,7 @@ export default function NewEventPage() {
                   loading={isCreating}
                   disabled={isCreating}
                 >
-                  Start Event
+                  Start Shoot
                 </Button>
               </div>
             </form>

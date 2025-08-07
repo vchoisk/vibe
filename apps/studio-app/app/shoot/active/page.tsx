@@ -5,50 +5,50 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/Button';
 import { Card, CardBody } from '@/components/Card';
 import { Toast } from '@/components/Toast';
-import { useEvent } from '@/contexts/EventContext';
+import { useShoot } from '@/contexts/ShootContext';
 import { useSession } from '@/contexts/SessionContext';
 import { api } from '@/lib/api/client';
 import styles from './page.module.css';
 
-export default function ActiveEventPage() {
+export default function ActiveShootPage() {
   const router = useRouter();
-  const { event, remainingMinutes, completeEvent } = useEvent();
+  const { shoot, remainingMinutes, completeShoot } = useShoot();
   const { session } = useSession();
   const [isCompleting, setIsCompleting] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
-  const [eventSessions, setEventSessions] = useState<any[]>([]);
+  const [shootSessions, setShootSessions] = useState<any[]>([]);
   const [isLoadingSessions, setIsLoadingSessions] = useState(false);
   const [photoFilter, setPhotoFilter] = useState<'all' | 'starred'>('all');
 
   useEffect(() => {
-    if (!event || event.status !== 'active') {
+    if (!shoot || shoot.status !== 'active') {
       router.push('/');
     }
-  }, [event, router]);
+  }, [shoot, router]);
 
   useEffect(() => {
-    if (event) {
-      loadEventSessions();
+    if (shoot) {
+      loadShootSessions();
     }
-  }, [event]);
+  }, [shoot]);
 
   // Reload sessions when session completes
   useEffect(() => {
-    if (event && !session) {
-      loadEventSessions();
+    if (shoot && !session) {
+      loadShootSessions();
     }
-  }, [session, event]);
+  }, [session, shoot]);
 
-  const loadEventSessions = async () => {
-    if (!event) return;
+  const loadShootSessions = async () => {
+    if (!shoot) return;
     
     setIsLoadingSessions(true);
     try {
-      const response = await fetch(`/api/events/${event.id}/sessions`);
+      const response = await fetch(`/api/shoots/${shoot.id}/sessions`);
       const data = await response.json();
-      setEventSessions(data.sessions || []);
+      setShootSessions(data.sessions || []);
     } catch (error) {
-      console.error('Failed to load event sessions:', error);
+      console.error('Failed to load shoot sessions:', error);
     } finally {
       setIsLoadingSessions(false);
     }
@@ -72,8 +72,8 @@ export default function ActiveEventPage() {
     }
   };
 
-  const handleCompleteEvent = async () => {
-    if (!event) return;
+  const handleCompleteShoot = async () => {
+    if (!shoot) return;
 
     // Check if there's an active session that needs to be completed first
     if (session && session.status === 'active') {
@@ -86,21 +86,21 @@ export default function ActiveEventPage() {
 
     setIsCompleting(true);
     
-    // Store event ID before completing (event will be cleared from context)
-    const eventId = event.id;
+    // Store shoot ID before completing (shoot will be cleared from context)
+    const shootId = shoot.id;
     
     try {
-      const summary = await completeEvent(eventId, () => {
-        // Navigate in the same execution context as clearing the event
-        router.push(`/event/summary?id=${eventId}`);
+      const summary = await completeShoot(shootId, () => {
+        // Navigate in the same execution context as clearing the shoot
+        router.push(`/shoot/summary?id=${shootId}`);
       });
       
       // Toast will show on the summary page
-      console.log(`Event completed! ${summary.totalPhotos} photos from ${summary.totalSessions} sessions.`);
+      console.log(`Shoot completed! ${summary.totalPhotos} photos from ${summary.totalSessions} sessions.`);
     } catch (error) {
-      console.error('Failed to complete event:', error);
+      console.error('Failed to complete shoot:', error);
       // Show more detailed error message
-      const errorMessage = error instanceof Error ? error.message : 'Failed to complete event';
+      const errorMessage = error instanceof Error ? error.message : 'Failed to complete shoot';
       setToast({
         message: errorMessage,
         type: 'error',
@@ -109,7 +109,7 @@ export default function ActiveEventPage() {
     }
   };
 
-  if (!event) {
+  if (!shoot) {
     return null;
   }
 
@@ -119,8 +119,8 @@ export default function ActiveEventPage() {
     <main className={styles.main}>
       <div className={styles.container}>
         <div className={styles.header}>
-          <h1 className={styles.title}>{event.name}</h1>
-          <p className={styles.subtitle}>Client: {event.clientName}</p>
+          <h1 className={styles.title}>{shoot.name}</h1>
+          <p className={styles.subtitle}>Client: {shoot.clientName}</p>
           
           <div className={styles.timer}>
             <div className={`${styles.timeDisplay} ${isOvertime ? styles.overtime : ''}`}>
@@ -145,15 +145,15 @@ export default function ActiveEventPage() {
               <div className={styles.statGrid}>
                 <div className={styles.stat}>
                   <span className={styles.statLabel}>Sessions</span>
-                  <span className={styles.statValue}>{event.sessions.length}</span>
+                  <span className={styles.statValue}>{shoot.sessions.length}</span>
                 </div>
                 <div className={styles.stat}>
                   <span className={styles.statLabel}>Total Photos</span>
-                  <span className={styles.statValue}>{event.totalPhotos}</span>
+                  <span className={styles.statValue}>{shoot.totalPhotos}</span>
                 </div>
                 <div className={styles.stat}>
                   <span className={styles.statLabel}>Starred Photos</span>
-                  <span className={styles.statValue}>{event.totalStarredPhotos}</span>
+                  <span className={styles.statValue}>{shoot.totalStarredPhotos}</span>
                 </div>
               </div>
             </CardBody>
@@ -191,18 +191,18 @@ export default function ActiveEventPage() {
           )}
         </div>
 
-        {event.notes && (
+        {shoot.notes && (
           <Card className={styles.notes}>
             <CardBody>
               <h3 className={styles.notesTitle}>Notes</h3>
-              <p className={styles.notesText}>{event.notes}</p>
+              <p className={styles.notesText}>{shoot.notes}</p>
             </CardBody>
           </Card>
         )}
 
         <div className={styles.photosSection}>
           <div className={styles.photosSectionHeader}>
-            <h2 className={styles.photosSectionTitle}>Event Photos</h2>
+            <h2 className={styles.photosSectionTitle}>Shoot Photos</h2>
             <div className={styles.photoFilters}>
               <Button
                 variant={photoFilter === 'all' ? 'primary' : 'ghost'}
@@ -223,11 +223,11 @@ export default function ActiveEventPage() {
           
           {isLoadingSessions ? (
             <div className={styles.loading}>Loading photos...</div>
-          ) : eventSessions.length === 0 ? (
+          ) : shootSessions.length === 0 ? (
             <p className={styles.noPhotos}>No photos yet. Start a session to begin!</p>
           ) : (
             <div className={styles.sessionsContainer}>
-              {eventSessions.map((session, index) => {
+              {shootSessions.map((session, index) => {
                 const filteredPhotos = photoFilter === 'starred' 
                   ? session.photos.filter((photo: any) => session.starredPhotos.includes(photo.id))
                   : session.photos;
@@ -268,13 +268,13 @@ export default function ActiveEventPage() {
 
         <div className={styles.footer}>
           <Button
-            variant="destructive"
+            variant="danger"
             size="medium"
-            onClick={handleCompleteEvent}
+            onClick={handleCompleteShoot}
             loading={isCompleting}
             disabled={isCompleting}
           >
-            Complete Event
+            Complete Shoot
           </Button>
         </div>
       </div>

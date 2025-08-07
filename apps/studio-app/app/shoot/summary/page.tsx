@@ -1,61 +1,61 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/Button';
 import { Card, CardBody } from '@/components/Card';
 import { api } from '@/lib/api/client';
-import { Event, EventSummary } from '@snapstudio/types';
+import { Shoot, ShootSummary } from '@snapstudio/types';
 import styles from './page.module.css';
 
-export default function EventSummaryPage() {
+function ShootSummaryContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const eventId = searchParams.get('id');
+  const shootId = searchParams.get('id');
   
-  const [event, setEvent] = useState<Event | null>(null);
-  const [summary, setSummary] = useState<EventSummary | null>(null);
+  const [shoot, setShoot] = useState<Shoot | null>(null);
+  const [summary, setSummary] = useState<ShootSummary | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedSessionIndex, setSelectedSessionIndex] = useState(0);
 
   useEffect(() => {
-    if (eventId) {
-      loadEventSummary();
+    if (shootId) {
+      loadShootSummary();
     } else {
       router.push('/');
     }
-  }, [eventId, router]);
+  }, [shootId, router]);
 
-  const loadEventSummary = async () => {
+  const loadShootSummary = async () => {
     try {
-      const [eventResponse, sessionsResponse] = await Promise.all([
-        api.events.get(eventId!),
-        fetch(`/api/events/${eventId}/sessions`).then(r => r.json())
+      const [shootResponse, sessionsResponse] = await Promise.all([
+        api.shoots.get(shootId!),
+        fetch(`/api/shoots/${shootId}/sessions`).then(r => r.json())
       ]);
       
-      setEvent(eventResponse.event);
+      setShoot(shootResponse.shoot);
       
-      // Create summary from the event and session data
+      // Create summary from the shoot and session data
       const allPhotos = sessionsResponse.sessions.flatMap((s: any) => s.photos || []);
       
       setSummary({
-        eventId: eventResponse.event.id,
-        totalSessions: eventResponse.event.sessions.length,
-        totalPhotos: eventResponse.event.totalPhotos,
-        totalStarredPhotos: eventResponse.event.totalStarredPhotos,
+        shootId: shootResponse.shoot.id,
+        totalSessions: shootResponse.shoot.sessions.length,
+        totalPhotos: shootResponse.shoot.totalPhotos,
+        totalStarredPhotos: shootResponse.shoot.totalStarredPhotos,
         allPhotos,
         sessionDetails: sessionsResponse.sessions,
         duration: {
-          scheduled: eventResponse.event.durationMinutes,
-          actual: eventResponse.event.activatedAt 
-            ? Math.floor((new Date(eventResponse.event.completedAt).getTime() - new Date(eventResponse.event.activatedAt).getTime()) / 60000)
+          scheduled: shootResponse.shoot.durationMinutes,
+          actual: shootResponse.shoot.activatedAt 
+            ? Math.floor((new Date(shootResponse.shoot.completedAt).getTime() - new Date(shootResponse.shoot.activatedAt).getTime()) / 60000)
             : 0,
         },
       });
     } catch (err) {
-      console.error('Failed to load event summary:', err);
-      setError('Failed to load event summary');
+      console.error('Failed to load shoot summary:', err);
+      setError('Failed to load shoot summary');
     } finally {
       setIsLoading(false);
     }
@@ -68,16 +68,16 @@ export default function EventSummaryPage() {
   if (isLoading) {
     return (
       <main className={styles.main}>
-        <div className={styles.loading}>Loading event summary...</div>
+        <div className={styles.loading}>Loading shoot summary...</div>
       </main>
     );
   }
 
-  if (error || !event) {
+  if (error || !shoot) {
     return (
       <main className={styles.main}>
         <div className={styles.error}>
-          {error || 'Event not found'}
+          {error || 'Shoot not found'}
           <Button onClick={handleBackHome}>Back to Home</Button>
         </div>
       </main>
@@ -90,8 +90,8 @@ export default function EventSummaryPage() {
     <main className={styles.main}>
       <div className={styles.container}>
         <div className={styles.header}>
-          <h1 className={styles.title}>Event Complete</h1>
-          <p className={styles.subtitle}>{event.name} • {event.clientName}</p>
+          <h1 className={styles.title}>Shoot Complete</h1>
+          <p className={styles.subtitle}>{shoot.name} • {shoot.clientName}</p>
         </div>
 
         <div className={styles.stats}>
@@ -100,20 +100,20 @@ export default function EventSummaryPage() {
               <div className={styles.statGrid}>
                 <div className={styles.stat}>
                   <span className={styles.statLabel}>Total Sessions</span>
-                  <span className={styles.statValue}>{event.sessions.length}</span>
+                  <span className={styles.statValue}>{shoot.sessions.length}</span>
                 </div>
                 <div className={styles.stat}>
                   <span className={styles.statLabel}>Total Photos</span>
-                  <span className={styles.statValue}>{event.totalPhotos}</span>
+                  <span className={styles.statValue}>{shoot.totalPhotos}</span>
                 </div>
                 <div className={styles.stat}>
                   <span className={styles.statLabel}>Starred Photos</span>
-                  <span className={styles.statValue}>{event.totalStarredPhotos}</span>
+                  <span className={styles.statValue}>{shoot.totalStarredPhotos}</span>
                 </div>
                 <div className={styles.stat}>
                   <span className={styles.statLabel}>Duration</span>
                   <span className={styles.statValue}>
-                    {summary?.duration.actual || event.durationMinutes} min
+                    {summary?.duration.actual || shoot.durationMinutes} min
                   </span>
                 </div>
               </div>
@@ -162,18 +162,18 @@ export default function EventSummaryPage() {
           </>
         )}
 
-        {event.pricePackage && (
+        {shoot.pricePackage && (
           <Card className={styles.invoice}>
             <CardBody>
               <h3>Invoice Summary</h3>
               <div className={styles.invoiceRow}>
-                <span>{event.pricePackage.name}</span>
-                <span>${event.pricePackage.price}</span>
+                <span>{shoot.pricePackage.name}</span>
+                <span>${shoot.pricePackage.price}</span>
               </div>
-              {summary && summary.duration.actual > event.durationMinutes && (
+              {summary && summary.duration.actual > shoot.durationMinutes && (
                 <div className={styles.invoiceRow}>
                   <span className={styles.overtime}>
-                    Overtime ({summary.duration.actual - event.durationMinutes} min)
+                    Overtime ({summary.duration.actual - shoot.durationMinutes} min)
                   </span>
                   <span className={styles.overtime}>Additional charges may apply</span>
                 </div>
@@ -193,5 +193,13 @@ export default function EventSummaryPage() {
         </div>
       </div>
     </main>
+  );
+}
+
+export default function ShootSummaryPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <ShootSummaryContent />
+    </Suspense>
   );
 }

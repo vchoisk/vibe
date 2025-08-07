@@ -58,7 +58,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { poseId, outputDirectory, eventId } = body;
+    const { poseId, outputDirectory, shootId } = body;
 
     if (!poseId) {
       throw errors.badRequest('poseId is required', { received: body });
@@ -85,10 +85,10 @@ export async function POST(request: NextRequest) {
     const session = await manager.createSession(
       pose,
       outputDirectory || defaultConfig.outputDirectory,
-      eventId // Pass eventId if provided
+      shootId // Pass shootId if provided
     );
 
-    console.log(`[API] Created new session: ${session.id} with pose: ${pose.name}${eventId ? ` for event: ${eventId}` : ''}`);
+    console.log(`[API] Created new session: ${session.id} with pose: ${pose.name}${shootId ? ` for shoot: ${shootId}` : ''}`);
     return NextResponse.json({ session }, { status: 201 });
   } catch (error) {
     return createErrorResponse(error, 500, '/api/sessions');
