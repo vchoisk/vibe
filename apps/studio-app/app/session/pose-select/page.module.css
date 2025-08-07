@@ -13,6 +13,17 @@
   margin-bottom: 40px;
 }
 
+.titleSection {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.titleSection > div {
+  flex: 1;
+}
+
 .title {
   font-size: 2.5rem;
   font-weight: 700;
@@ -97,6 +108,7 @@
   position: sticky;
   bottom: 20px;
   margin-top: 40px;
+  margin-bottom: 40px;
 }
 
 .selectedInfo h3 {

@@ -9,6 +9,7 @@ import { useShoot } from '@/contexts/ShootContext';
 import { useSession } from '@/contexts/SessionContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { PageLayout } from '@/components/PageLayout';
+import { JoinPhoneModal } from '@/components/JoinPhoneModal';
 import { api } from '@/lib/api/client';
 import styles from './page.module.css';
 
@@ -23,6 +24,7 @@ export default function ActiveShootPage() {
   const [isLoadingSessions, setIsLoadingSessions] = useState(false);
   const [photoFilter, setPhotoFilter] = useState<'all' | 'starred'>('all');
   const [starringPhoto, setStarringPhoto] = useState<string | null>(null);
+  const [showJoinModal, setShowJoinModal] = useState(false);
 
   useEffect(() => {
     if (!shoot || shoot.status !== 'active') {
@@ -179,8 +181,20 @@ export default function ActiveShootPage() {
       <main className={styles.main}>
         <div className={styles.container}>
         <div className={styles.header}>
-          <h1 className={styles.title}>{shoot.name}</h1>
-          <p className={styles.subtitle}>{t.shoot.client}: {shoot.clientName}</p>
+          <div className={styles.titleSection}>
+            <div>
+              <h1 className={styles.title}>{shoot.name}</h1>
+              <p className={styles.subtitle}>{t.shoot.client}: {shoot.clientName}</p>
+            </div>
+            <Button
+              type="button"
+              variant="secondary"
+              size="medium"
+              onClick={() => setShowJoinModal(true)}
+            >
+              {t.shoot.joinWithPhone || 'Join with my cellphone'}
+            </Button>
+          </div>
           
           <div className={styles.timer}>
             <div className={`${styles.timeDisplay} ${isOvertime ? styles.overtime : ''}`}>
@@ -350,6 +364,13 @@ export default function ActiveShootPage() {
           message={toast.message}
           type={toast.type}
           onClose={() => setToast(null)}
+        />
+      )}
+      
+      {showJoinModal && shoot && (
+        <JoinPhoneModal 
+          shootId={shoot.id}
+          onClose={() => setShowJoinModal(false)}
         />
       )}
       </main>

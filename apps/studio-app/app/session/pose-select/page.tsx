@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/Button';
 import { Card, CardBody } from '@/components/Card';
 import { PageLayout } from '@/components/PageLayout';
+import { JoinPhoneModal } from '@/components/JoinPhoneModal';
 import { api } from '@/lib/api/client';
 import { useSession } from '@/contexts/SessionContext';
 import { useShoot } from '@/contexts/ShootContext';
@@ -23,6 +24,7 @@ export default function PoseSelectPage() {
   const [selectedPose, setSelectedPose] = useState<Pose | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
+  const [showJoinModal, setShowJoinModal] = useState(false);
 
   // Check for existing session and active shoot
   useEffect(() => {
@@ -115,13 +117,55 @@ export default function PoseSelectPage() {
       <main className={styles.main}>
         <div className={styles.container}>
           <div className={styles.header}>
-            <h1 className={styles.title}>{t.poseSelect.title}</h1>
-            <p className={styles.subtitle}>
-              {shoot && shoot.status === 'active' 
-                ? t.poseSelect.subtitleWithClient.replace('{clientName}', shoot.clientName)
-                : t.poseSelect.subtitle}
-            </p>
+            <div className={styles.titleSection}>
+              <div>
+                <h1 className={styles.title}>{t.poseSelect.title}</h1>
+                <p className={styles.subtitle}>
+                  {shoot && shoot.status === 'active' 
+                    ? t.poseSelect.subtitleWithClient.replace('{clientName}', shoot.clientName)
+                    : t.poseSelect.subtitle}
+                </p>
+              </div>
+              {shoot && shoot.status === 'active' && (
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="medium"
+                  onClick={() => setShowJoinModal(true)}
+                >
+                  {t.shoot.joinWithPhone || 'Join with my cellphone'}
+                </Button>
+              )}
+            </div>
           </div>
+
+
+          {selectedPose && (
+          <div className={styles.selectedInfo}>
+            <Card>
+              <CardBody>
+                <h3>{t.poseSelect.selected}: {selectedPose.name}</h3>
+                <p>{selectedPose.description}</p>
+                <div className={styles.instructions}>
+                  <h4>{t.poseSelect.instructions}:</h4>
+                  <ul>
+                    {selectedPose.instructions.map((instruction, index) => (
+                      <li key={index}>{instruction}</li>
+                    ))}
+                  </ul>
+                </div>
+                <Button
+                  size="large"
+                  fullWidth
+                  onClick={handleStartSession}
+                  loading={isCreating}
+                >
+                  {t.poseSelect.startSession} {selectedPose.name}
+                </Button>
+              </CardBody>
+            </Card>
+          </div>
+        )}
 
         <div className={styles.categories}>
           <Button
@@ -169,33 +213,14 @@ export default function PoseSelectPage() {
           </div>
         )}
 
-        {selectedPose && (
-          <div className={styles.selectedInfo}>
-            <Card>
-              <CardBody>
-                <h3>{t.poseSelect.selected}: {selectedPose.name}</h3>
-                <p>{selectedPose.description}</p>
-                <div className={styles.instructions}>
-                  <h4>{t.poseSelect.instructions}:</h4>
-                  <ul>
-                    {selectedPose.instructions.map((instruction, index) => (
-                      <li key={index}>{instruction}</li>
-                    ))}
-                  </ul>
-                </div>
-                <Button
-                  size="large"
-                  fullWidth
-                  onClick={handleStartSession}
-                  loading={isCreating}
-                >
-                  {t.poseSelect.startSession} {selectedPose.name}
-                </Button>
-              </CardBody>
-            </Card>
-          </div>
-        )}
       </div>
+      
+      {showJoinModal && shoot && (
+        <JoinPhoneModal 
+          shootId={shoot.id}
+          onClose={() => setShowJoinModal(false)}
+        />
+      )}
       </main>
     </PageLayout>
   );

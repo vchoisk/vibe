@@ -55,6 +55,7 @@ export const ja: Translations = {
     minutes: '分',
     hour: '時間',
     hours: '時間',
+    joinWithPhone: '携帯電話で参加',
     activeShoot: 'アクティブな撮影',
     timeRemaining: '残り時間',
     sessionsCount: 'セッション',
@@ -119,7 +120,6 @@ export const ja: Translations = {
     photos: '写真',
     cancelSession: 'セッションをキャンセル',
     waitingForPhotos: '写真を待っています...',
-    connectionLost: '接続が失われました。再接続中...',
     cancelConfirm: '本当にこのセッションをキャンセルしますか？すべての写真が失われます。',
   },
   

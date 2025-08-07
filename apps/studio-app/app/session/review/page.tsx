@@ -6,6 +6,7 @@ import { Button } from '@/components/Button';
 import { Card, CardBody } from '@/components/Card';
 import { Toast } from '@/components/Toast';
 import { PageLayout } from '@/components/PageLayout';
+import { JoinPhoneModal } from '@/components/JoinPhoneModal';
 import { api } from '@/lib/api/client';
 import { useSession } from '@/contexts/SessionContext';
 import { useShoot } from '@/contexts/ShootContext';
@@ -24,6 +25,7 @@ export default function ReviewPage() {
   const [isCompleting, setIsCompleting] = useState(false);
   const [isReturning, setIsReturning] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  const [showJoinModal, setShowJoinModal] = useState(false);
 
   useEffect(() => {
     if (session) {
@@ -169,12 +171,26 @@ export default function ReviewPage() {
       <main className={styles.main}>
         <div className={styles.container}>
           <div className={styles.header}>
-            <h1 className={styles.title}>{t.review.title}</h1>
-            <p className={styles.subtitle}>
-              {t.review.subtitle}
-            </p>
-            <div className={styles.stats}>
-              {t.review.starredCount.replace('{starred}', String(starredPhotos.size)).replace('{total}', String(photos.length))}
+            <div className={styles.titleSection}>
+              <div>
+                <h1 className={styles.title}>{t.review.title}</h1>
+                <p className={styles.subtitle}>
+                  {t.review.subtitle}
+                </p>
+                <div className={styles.stats}>
+                  {t.review.starredCount.replace('{starred}', String(starredPhotos.size)).replace('{total}', String(photos.length))}
+                </div>
+              </div>
+              {shoot && (
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="medium"
+                  onClick={() => setShowJoinModal(true)}
+                >
+                  {t.shoot.joinWithPhone || 'Join with my cellphone'}
+                </Button>
+              )}
             </div>
           </div>
 
@@ -258,6 +274,13 @@ export default function ReviewPage() {
           message={toast.message}
           type={toast.type}
           onClose={() => setToast(null)}
+        />
+      )}
+      
+      {showJoinModal && shoot && (
+        <JoinPhoneModal 
+          shootId={shoot.id}
+          onClose={() => setShowJoinModal(false)}
         />
       )}
       </main>

@@ -15,6 +15,18 @@
   margin-bottom: 2rem;
 }
 
+.titleSection {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+}
+
+.titleSection > div {
+  text-align: left;
+  flex: 1;
+}
+
 .title {
   font-size: 2.5rem;
   font-weight: bold;
@@ -25,7 +37,7 @@
 .subtitle {
   font-size: 1.125rem;
   color: var(--muted-foreground);
-  margin-bottom: 2rem;
+  margin: 0;
 }
 
 .timer {

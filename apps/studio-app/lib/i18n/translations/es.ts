@@ -55,6 +55,7 @@ export const es: Translations = {
     minutes: 'minutos',
     hour: 'hora',
     hours: 'horas',
+    joinWithPhone: 'Unirse con mi celular',
     activeShoot: 'Sesión Activa',
     timeRemaining: 'Tiempo Restante',
     sessionsCount: 'Sesiones',
@@ -119,7 +120,6 @@ export const es: Translations = {
     photos: 'Fotos',
     cancelSession: 'Cancelar Sesión',
     waitingForPhotos: 'Esperando fotos...',
-    connectionLost: 'Conexión perdida. Reconectando...',
     cancelConfirm: '¿Está seguro de que desea cancelar esta sesión? Todas las fotos se perderán.',
   },
   

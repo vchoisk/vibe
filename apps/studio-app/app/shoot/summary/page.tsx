@@ -6,6 +6,7 @@ import { Button } from '@/components/Button';
 import { Card, CardBody } from '@/components/Card';
 import { Toast } from '@/components/Toast';
 import { PageLayout } from '@/components/PageLayout';
+import { JoinPhoneModal } from '@/components/JoinPhoneModal';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { api } from '@/lib/api/client';
 import { Shoot, ShootSummary } from '@snapstudio/types';
@@ -24,6 +25,7 @@ function ShootSummaryContent() {
   const [selectedSessionIndex, setSelectedSessionIndex] = useState(0);
   const [starringPhoto, setStarringPhoto] = useState<string | null>(null);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  const [showJoinModal, setShowJoinModal] = useState(false);
 
   useEffect(() => {
     if (shootId) {
@@ -165,8 +167,20 @@ function ShootSummaryContent() {
     <main className={styles.main}>
       <div className={styles.container}>
         <div className={styles.header}>
-          <h1 className={styles.title}>Shoot Complete</h1>
-          <p className={styles.subtitle}>{shoot.name} • {shoot.clientName}</p>
+          <div className={styles.titleSection}>
+            <div>
+              <h1 className={styles.title}>Shoot Complete</h1>
+              <p className={styles.subtitle}>{shoot.name} • {shoot.clientName}</p>
+            </div>
+            <Button
+              type="button"
+              variant="secondary"
+              size="medium"
+              onClick={() => setShowJoinModal(true)}
+            >
+              {t.shoot.joinWithPhone || 'Join with my cellphone'}
+            </Button>
+          </div>
         </div>
 
         <div className={styles.stats}>
@@ -279,6 +293,13 @@ function ShootSummaryContent() {
           message={toast.message}
           type={toast.type}
           onClose={() => setToast(null)}
+        />
+      )}
+      
+      {showJoinModal && shoot && (
+        <JoinPhoneModal 
+          shootId={shoot.id}
+          onClose={() => setShowJoinModal(false)}
         />
       )}
     </main>

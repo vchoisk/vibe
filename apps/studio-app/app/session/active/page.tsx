@@ -8,9 +8,11 @@ import { PageLayout } from '@/components/PageLayout';
 import { PhotoPreview } from '@/components/PhotoPreview';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import DebugSidebar from '@/components/DebugSidebar';
+import { JoinPhoneModal } from '@/components/JoinPhoneModal';
 import { api, ApiClientError } from '@/lib/api/client';
 import { useSocket } from '@/lib/hooks/useSocket';
 import { useSession } from '@/contexts/SessionContext';
+import { useShoot } from '@/contexts/ShootContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { PhotoSession, Photo } from '@snapstudio/types';
 import styles from './page.module.css';
@@ -19,6 +21,7 @@ export default function ActiveSessionPage() {
   const router = useRouter();
   const { on, off, isConnected } = useSocket();
   const { session, isLoading: sessionLoading, error: sessionError, updateSessionStatus } = useSession();
+  const { shoot } = useShoot();
   const { t } = useLanguage();
   const [error, setError] = useState<Error | null>(null);
   const [photos, setPhotos] = useState<Photo[]>([]);
@@ -26,6 +29,7 @@ export default function ActiveSessionPage() {
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [isDebugOpen, setIsDebugOpen] = useState(false);
   const [isTakingFakePhoto, setIsTakingFakePhoto] = useState(false);
+  const [showJoinModal, setShowJoinModal] = useState(false);
 
   useEffect(() => {
     // Check session status and redirect if needed
@@ -181,8 +185,22 @@ export default function ActiveSessionPage() {
 
       <div className={styles.container}>
         <div className={styles.header}>
-          <h1 className={styles.title}>{session.poseName} {t.session.title}</h1>
-          <p className={styles.subtitle}>{t.session.takePhotos}</p>
+          <div className={styles.titleSection}>
+            <div>
+              <h1 className={styles.title}>{session.poseName} {t.session.title}</h1>
+              <p className={styles.subtitle}>{t.session.takePhotos}</p>
+            </div>
+            {shoot && (
+              <Button
+                type="button"
+                variant="secondary"
+                size="medium"
+                onClick={() => setShowJoinModal(true)}
+              >
+                {t.shoot.joinWithPhone || 'Join with my cellphone'}
+              </Button>
+            )}
+          </div>
         </div>
 
         <Card className={styles.progressCard}>
@@ -263,17 +281,7 @@ export default function ActiveSessionPage() {
             {t.session.cancelSession}
           </Button>
         </div>
-
-        <div className={styles.waitingMessage}>
-          <p>{t.session.waitingForPhotos}</p>
-          <div className={styles.spinner} />
-          {!isConnected && (
-            <p className={styles.connectionWarning}>
-              ⚠️ {t.session.connectionLost}
-            </p>
-          )}
         </div>
-      </div>
 
       {/* Fullscreen Photo Preview */}
       <PhotoPreview
@@ -291,6 +299,13 @@ export default function ActiveSessionPage() {
         onTakeFakePhoto={photoCount < session.maxPhotos ? handleAddTestPhoto : undefined}
         isTakingPhoto={isTakingFakePhoto}
       />
+      
+      {showJoinModal && shoot && (
+        <JoinPhoneModal 
+          shootId={shoot.id}
+          onClose={() => setShowJoinModal(false)}
+        />
+      )}
       </main>
     </PageLayout>
   );

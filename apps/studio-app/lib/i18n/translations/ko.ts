@@ -55,6 +55,7 @@ export const ko: Translations = {
     minutes: '분',
     hour: '시간',
     hours: '시간',
+    joinWithPhone: '내 휴대폰으로 참여',
     activeShoot: '진행 중인 촬영',
     timeRemaining: '남은 시간',
     sessionsCount: '세션',
@@ -119,7 +120,6 @@ export const ko: Translations = {
     photos: '사진',
     cancelSession: '세션 취소',
     waitingForPhotos: '사진을 기다리는 중...',
-    connectionLost: '연결이 끊어졌습니다. 다시 연결 중...',
     cancelConfirm: '정말로 이 세션을 취소하시겠습니까? 모든 사진이 삭제됩니다.',
   },
   

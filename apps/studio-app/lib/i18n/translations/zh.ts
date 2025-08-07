@@ -55,6 +55,7 @@ export const zh: Translations = {
     minutes: '分钟',
     hour: '小时',
     hours: '小时',
+    joinWithPhone: '用我的手机加入',
     activeShoot: '活动拍摄',
     timeRemaining: '剩余时间',
     sessionsCount: '拍摄组',
@@ -119,7 +120,6 @@ export const zh: Translations = {
     photos: '照片',
     cancelSession: '取消会话',
     waitingForPhotos: '等待照片中...',
-    connectionLost: '连接丢失。正在重新连接...',
     cancelConfirm: '您确定要取消此会话吗？所有照片将丢失。',
   },
   
