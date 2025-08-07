@@ -6,6 +6,7 @@ export interface Photo {
   starred: boolean;
   sessionId: string;
   thumbnailPath?: string;
+  sessionFilepath?: string; // Path to the photo copy in the session folder
 }
 
 export interface PhotoSession {

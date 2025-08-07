@@ -84,6 +84,10 @@ export class SessionManager extends EventEmitter {
       shootId, // Associate with shoot if provided
     };
 
+    // Create a photos directory for this session
+    const sessionPhotosDir = path.join(this.options.dataDirectory, 'sessions', session.id, 'photos');
+    await fs.ensureDir(sessionPhotosDir);
+
     this.currentSession = session;
     await this.saveSession(session);
 
@@ -105,16 +109,34 @@ export class SessionManager extends EventEmitter {
       return;
     }
 
-    this.currentSession.photos.push(photo);
-    this.currentSession.photoCount = this.currentSession.photos.length;
+    // Copy photo to session folder
+    const sessionPhotosDir = path.join(this.options.dataDirectory, 'sessions', this.currentSession.id, 'photos');
+    const photoDestination = path.join(sessionPhotosDir, photo.filename);
+    
+    try {
+      await fs.copy(photo.filepath, photoDestination, { preserveTimestamps: true });
+      console.log(`[SessionManager ${this.instanceId}] Copied photo ${photo.filename} to session folder`);
+      
+      // Update photo object to reference the session copy
+      const photoWithSessionPath = {
+        ...photo,
+        sessionFilepath: photoDestination
+      };
+      
+      this.currentSession.photos.push(photoWithSessionPath);
+      this.currentSession.photoCount = this.currentSession.photos.length;
 
-    await this.saveSession(this.currentSession);
-    this.emit('photo-added', { session: this.currentSession, photo });
+      await this.saveSession(this.currentSession);
+      this.emit('photo-added', { session: this.currentSession, photo: photoWithSessionPath });
 
-    // Check if we've NOW reached the max after adding this photo
-    if (this.currentSession.photos.length >= this.currentSession.maxPhotos) {
-      console.log('Session reached maximum photos, changing status to review');
-      await this.updateSessionStatus('review');
+      // Check if we've NOW reached the max after adding this photo
+      if (this.currentSession.photos.length >= this.currentSession.maxPhotos) {
+        console.log('Session reached maximum photos, changing status to review');
+        await this.updateSessionStatus('review');
+      }
+    } catch (error) {
+      console.error(`[SessionManager ${this.instanceId}] Error copying photo to session folder:`, error);
+      throw error;
     }
   }
 
@@ -186,13 +208,23 @@ export class SessionManager extends EventEmitter {
 
   async getAllSessions(): Promise<PhotoSession[]> {
     const sessionsDir = path.join(this.options.dataDirectory, 'sessions');
-    const files = await fs.readdir(sessionsDir);
+    const entries = await fs.readdir(sessionsDir);
     const sessions: PhotoSession[] = [];
 
-    for (const file of files) {
-      if (file.endsWith('.json')) {
-        const sessionPath = path.join(sessionsDir, file);
-        const session = await fs.readJson(sessionPath);
+    for (const entry of entries) {
+      const entryPath = path.join(sessionsDir, entry);
+      const stat = await fs.stat(entryPath);
+      
+      if (stat.isDirectory()) {
+        // New structure: session folders with session.json inside
+        const sessionJsonPath = path.join(entryPath, 'session.json');
+        if (await fs.pathExists(sessionJsonPath)) {
+          const session = await fs.readJson(sessionJsonPath);
+          sessions.push(this.deserializeSession(session));
+        }
+      } else if (entry.endsWith('.json')) {
+        // Legacy structure: session-*.json files
+        const session = await fs.readJson(entryPath);
         sessions.push(this.deserializeSession(session));
       }
     }
@@ -203,14 +235,28 @@ export class SessionManager extends EventEmitter {
   }
 
   async getSession(sessionId: string): Promise<PhotoSession | null> {
-    const sessionPath = path.join(
+    // Try new location first
+    const newSessionPath = path.join(
+      this.options.dataDirectory,
+      'sessions',
+      sessionId,
+      'session.json'
+    );
+
+    if (await fs.pathExists(newSessionPath)) {
+      const session = await fs.readJson(newSessionPath);
+      return this.deserializeSession(session);
+    }
+
+    // Fallback to legacy location
+    const legacySessionPath = path.join(
       this.options.dataDirectory,
       'sessions',
       `session-${sessionId}.json`
     );
 
-    if (await fs.pathExists(sessionPath)) {
-      const session = await fs.readJson(sessionPath);
+    if (await fs.pathExists(legacySessionPath)) {
+      const session = await fs.readJson(legacySessionPath);
       return this.deserializeSession(session);
     }
 
@@ -218,13 +264,21 @@ export class SessionManager extends EventEmitter {
   }
 
   private async saveSession(session: PhotoSession): Promise<void> {
-    const sessionPath = path.join(
+    const sessionDir = path.join(this.options.dataDirectory, 'sessions', session.id);
+    await fs.ensureDir(sessionDir);
+    
+    const sessionPath = path.join(sessionDir, 'session.json');
+    
+    // Also save a backup in the old location for backward compatibility
+    const legacyPath = path.join(
       this.options.dataDirectory,
       'sessions',
       `session-${session.id}.json`
     );
 
-    await fs.writeJson(sessionPath, this.serializeSession(session), { spaces: 2 });
+    const serializedSession = this.serializeSession(session);
+    await fs.writeJson(sessionPath, serializedSession, { spaces: 2 });
+    await fs.writeJson(legacyPath, serializedSession, { spaces: 2 });
   }
 
   private startSessionTimer(): void {
@@ -248,6 +302,14 @@ export class SessionManager extends EventEmitter {
   }
 
   private serializeSession(session: PhotoSession): any {
+    // Create detailed starred photos array with full photo info
+    const starredPhotosDetail = session.photos
+      .filter(photo => session.starredPhotos.includes(photo.id))
+      .map(photo => ({
+        ...photo,
+        captureTime: photo.captureTime.toISOString(),
+      }));
+
     return {
       ...session,
       startTime: session.startTime.toISOString(),
@@ -256,6 +318,7 @@ export class SessionManager extends EventEmitter {
         ...photo,
         captureTime: photo.captureTime.toISOString(),
       })),
+      starredPhotosDetail, // Add detailed starred photo information
     };
   }
 

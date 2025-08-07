@@ -44,10 +44,15 @@ export class FileOrganizer {
     const destPath = path.join(outputDir, destFilename);
 
     try {
+      // Prefer the session folder copy if it exists
+      const sourcePath = photo.sessionFilepath && await fs.pathExists(photo.sessionFilepath) 
+        ? photo.sessionFilepath 
+        : photo.filepath;
+
       if (this.options.preserveOriginals) {
-        await fs.copy(photo.filepath, destPath, { overwrite: false });
+        await fs.copy(sourcePath, destPath, { overwrite: false });
       } else {
-        await fs.move(photo.filepath, destPath, { overwrite: false });
+        await fs.move(sourcePath, destPath, { overwrite: false });
       }
     } catch (error) {
       console.error(`Error copying photo ${photo.filename}:`, error);
