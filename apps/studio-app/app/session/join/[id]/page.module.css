@@ -1,0 +1,293 @@
+.main {
+  min-height: 100vh;
+  padding: 1rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.loading,
+.error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 50vh;
+  gap: 2rem;
+  font-size: 1.125rem;
+  color: white;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 2rem;
+  color: white;
+}
+
+.title {
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+
+.subtitle {
+  font-size: 1rem;
+  opacity: 0.9;
+}
+
+.liveIndicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  padding: 0.5rem 1rem;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 2rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.liveDot {
+  width: 8px;
+  height: 8px;
+  background: #4ade80;
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(74, 222, 128, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(74, 222, 128, 0);
+  }
+}
+
+/* Session Tabs */
+.sessionTabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+}
+
+.sessionTab {
+  flex-shrink: 0;
+  padding: 0.75rem 1.25rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 0.5rem;
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.25rem;
+}
+
+.sessionTab:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.activeTab {
+  background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.liveTab {
+  border-color: #4ade80;
+  position: relative;
+}
+
+.tabLabel {
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.tabCount {
+  font-size: 0.75rem;
+  opacity: 0.8;
+}
+
+.starCount {
+  color: #fbbf24;
+}
+
+.liveLabel {
+  position: absolute;
+  top: -0.5rem;
+  right: -0.5rem;
+  background: #4ade80;
+  color: #1a1a1a;
+  padding: 0.125rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.625rem;
+  font-weight: bold;
+}
+
+/* Photo Stats */
+.photoStats {
+  margin-bottom: 1.5rem;
+}
+
+.sectionTitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+  color: var(--foreground);
+}
+
+.photoCount {
+  font-size: 0.875rem;
+  color: var(--muted-foreground);
+}
+
+/* Photo Grid */
+.photoGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 1rem;
+}
+
+.photoCard {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  background: #f3f4f6;
+  transition: transform 0.2s;
+}
+
+.photoCard:hover {
+  transform: scale(1.02);
+}
+
+.photoCard.starred {
+  box-shadow: 0 0 0 3px #fbbf24;
+}
+
+.photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.starButton {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.5);
+  border: none;
+  color: white;
+  font-size: 1.25rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.starButton:hover {
+  background: rgba(0, 0, 0, 0.7);
+  transform: scale(1.1);
+}
+
+.starButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.photoCard.starred .starButton {
+  color: #fbbf24;
+}
+
+/* Empty State */
+.emptyState {
+  text-align: center;
+  padding: 3rem 1rem;
+}
+
+.emptyIcon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+}
+
+.emptyTitle {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: var(--foreground);
+}
+
+.emptyMessage {
+  font-size: 1rem;
+  color: var(--muted-foreground);
+}
+
+/* Connection Status */
+.connectionStatus {
+  position: fixed;
+  bottom: 1rem;
+  right: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 2rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.statusIndicator {
+  font-size: 0.875rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.connected {
+  color: #22c55e;
+}
+
+.disconnected {
+  color: #ef4444;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .photoGrid {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 0.5rem;
+  }
+
+  .sessionTabs {
+    flex-direction: column;
+  }
+
+  .sessionTab {
+    width: 100%;
+  }
+
+  .title {
+    font-size: 1.5rem;
+  }
+
+  .connectionStatus {
+    left: 1rem;
+    right: 1rem;
+    justify-content: center;
+  }
+}

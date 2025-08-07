@@ -56,10 +56,17 @@ export function useSocket() {
     }
   };
 
+  const emit = (event: string, data?: any) => {
+    if (socket) {
+      socket.emit(event, data);
+    }
+  };
+
   return {
     socket,
     isConnected,
     on,
     off,
+    emit,
   };
 }
