@@ -69,6 +69,18 @@ export const ja: Translations = {
     scheduledDuration: '予定時間',
     actualDuration: '実際の時間',
     backToHome: 'ホームに戻る',
+    overtime: '超過時間',
+    starredOnly: 'スター付きのみ',
+    client: 'お客様',
+    sessionInProgress: 'セッション進行中',
+    photosTaken: '撮影済み写真',
+    continueSession: 'セッションを続ける',
+    shootPhotos: '写真を撮影',
+    loadingPhotos: '写真を読み込んでいます...',
+    sessionLabel: 'セッション',
+    photosLabel: '写真',
+    starredPhotosLabel: 'スター付き写真',
+    completeSessionFirst: '現在のセッションを先に完了してください',
   },
   
   session: {
@@ -92,8 +104,8 @@ export const ja: Translations = {
     returnToCapture: '撮影に戻る',
     title: 'フォトセッション',
     takePhotos: '写真を撮る',
-    photoProgress: '撮影進捗',
-    photosRemaining: '枚残っています',
+    photoProgress: '写真 {current} / {total}',
+    photosRemaining: '残り{count}枚',
     sessionComplete: 'セッション完了！',
     instructions: '説明',
     instructionsList: [
@@ -131,6 +143,7 @@ export const ja: Translations = {
     failedToCompleteSession: 'セッションの完了に失敗しました。もう一度お試しください。',
     noActiveSession: 'アクティブなセッションがありません。',
     shootNotFound: '撮影が見つかりません。',
+    failedToCompleteShoot: '撮影を完了できませんでした',
   },
   
   poseSelect: {
@@ -147,13 +160,13 @@ export const ja: Translations = {
   review: {
     title: '写真をレビュー',
     subtitle: 'お気に入りの写真を選択してください',
-    starredCount: '{count}枚の写真がスター付き',
+    starredCount: '{starred} / {total}枚の写真にスター',
     starAll: 'すべてにスター',
     clearAll: 'すべてクリア',
     starPhoto: '写真にスターを付ける',
     unstarPhoto: 'スターを外す',
     readyToFinish: '完了する準備はできましたか？',
-    photosSavedMessage: 'スター付きの写真がセッションに保存されます。',
+    photosSavedMessage: '{count}枚のスター付き写真が出力フォルダに保存されます。',
     noPhotosSelected: '写真が選択されていません',
     takeMorePhotos: 'さらに写真を撮る',
     completeSession: 'セッションを完了',

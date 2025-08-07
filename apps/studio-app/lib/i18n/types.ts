@@ -64,12 +64,14 @@ export interface Translations {
     hours: string;
     activeShoot: string;
     timeRemaining: string;
+    overtime: string;
     sessionsCount: string;
     photosCount: string;
     startNewSession: string;
     completeShoot: string;
     allPhotos: string;
     starredPhotos: string;
+    starredOnly: string;
     noPhotosYet: string;
     shootSummary: string;
     totalSessions: string;
@@ -78,6 +80,16 @@ export interface Translations {
     scheduledDuration: string;
     actualDuration: string;
     backToHome: string;
+    client: string;
+    sessionInProgress: string;
+    photosTaken: string;
+    continueSession: string;
+    shootPhotos: string;
+    loadingPhotos: string;
+    sessionLabel: string;
+    photosLabel: string;
+    starredPhotosLabel: string;
+    completeSessionFirst: string;
   };
   
   // Session pages
@@ -135,6 +147,7 @@ export interface Translations {
     failedToCompleteSession: string;
     noActiveSession: string;
     shootNotFound: string;
+    failedToCompleteShoot: string;
   };
   
   // Pose selection

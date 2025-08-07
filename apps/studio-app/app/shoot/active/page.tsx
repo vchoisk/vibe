@@ -81,7 +81,7 @@ export default function ActiveShootPage() {
     // Check if there's an active session that needs to be completed first
     if (session && session.status === 'active') {
       setToast({
-        message: 'Please complete the current photo session first.',
+        message: t.shoot.completeSessionFirst,
         type: 'error',
       });
       return;
@@ -103,7 +103,7 @@ export default function ActiveShootPage() {
     } catch (error) {
       console.error('Failed to complete shoot:', error);
       // Show more detailed error message
-      const errorMessage = error instanceof Error ? error.message : 'Failed to complete shoot';
+      const errorMessage = error instanceof Error ? error.message : t.errors.failedToCompleteShoot;
       setToast({
         message: errorMessage,
         type: 'error',
@@ -124,18 +124,18 @@ export default function ActiveShootPage() {
         <div className={styles.container}>
         <div className={styles.header}>
           <h1 className={styles.title}>{shoot.name}</h1>
-          <p className={styles.subtitle}>Client: {shoot.clientName}</p>
+          <p className={styles.subtitle}>{t.shoot.client}: {shoot.clientName}</p>
           
           <div className={styles.timer}>
             <div className={`${styles.timeDisplay} ${isOvertime ? styles.overtime : ''}`}>
               {isOvertime ? (
                 <>
-                  <span className={styles.overtimeLabel}>OVERTIME</span>
+                  <span className={styles.overtimeLabel}>{t.shoot.overtime}</span>
                   <span className={styles.time}>-{formatTime(Math.abs(remainingMinutes))}</span>
                 </>
               ) : (
                 <>
-                  <span className={styles.timeLabel}>Time Remaining</span>
+                  <span className={styles.timeLabel}>{t.shoot.timeRemaining}</span>
                   <span className={styles.time}>{formatTime(remainingMinutes)}</span>
                 </>
               )}
@@ -148,15 +148,15 @@ export default function ActiveShootPage() {
             <CardBody>
               <div className={styles.statGrid}>
                 <div className={styles.stat}>
-                  <span className={styles.statLabel}>Sessions</span>
+                  <span className={styles.statLabel}>{t.shoot.sessionsCount}</span>
                   <span className={styles.statValue}>{shoot.sessions.length}</span>
                 </div>
                 <div className={styles.stat}>
-                  <span className={styles.statLabel}>Total Photos</span>
+                  <span className={styles.statLabel}>{t.shoot.totalPhotos}</span>
                   <span className={styles.statValue}>{shoot.totalPhotos}</span>
                 </div>
                 <div className={styles.stat}>
-                  <span className={styles.statLabel}>Starred Photos</span>
+                  <span className={styles.statLabel}>{t.shoot.starredPhotos}</span>
                   <span className={styles.statValue}>{shoot.totalStarredPhotos}</span>
                 </div>
               </div>
@@ -170,15 +170,15 @@ export default function ActiveShootPage() {
               <CardBody>
                 <div className={styles.sessionActive}>
                   <div>
-                    <h3>Session in Progress</h3>
-                    <p>{session.photos.length} / {session.maxPhotos} photos taken</p>
+                    <h3>{t.shoot.sessionInProgress}</h3>
+                    <p>{session.photos.length} / {session.maxPhotos} {t.shoot.photosTaken}</p>
                   </div>
                   <Button
                     variant="primary"
                     size="medium"
                     onClick={handleStartSession}
                   >
-                    Continue Session
+                    {t.shoot.continueSession}
                   </Button>
                 </div>
               </CardBody>
@@ -190,7 +190,7 @@ export default function ActiveShootPage() {
               onClick={handleStartSession}
               className={styles.startButton}
             >
-              Start New Photo Session
+              {t.shoot.startNewSession}
             </Button>
           )}
         </div>
@@ -198,7 +198,7 @@ export default function ActiveShootPage() {
         {shoot.notes && (
           <Card className={styles.notes}>
             <CardBody>
-              <h3 className={styles.notesTitle}>Notes</h3>
+              <h3 className={styles.notesTitle}>{t.shoot.notes}</h3>
               <p className={styles.notesText}>{shoot.notes}</p>
             </CardBody>
           </Card>
@@ -206,29 +206,29 @@ export default function ActiveShootPage() {
 
         <div className={styles.photosSection}>
           <div className={styles.photosSectionHeader}>
-            <h2 className={styles.photosSectionTitle}>Shoot Photos</h2>
+            <h2 className={styles.photosSectionTitle}>{t.shoot.shootPhotos}</h2>
             <div className={styles.photoFilters}>
               <Button
                 variant={photoFilter === 'all' ? 'primary' : 'ghost'}
                 size="small"
                 onClick={() => setPhotoFilter('all')}
               >
-                All Photos
+                {t.shoot.allPhotos}
               </Button>
               <Button
                 variant={photoFilter === 'starred' ? 'primary' : 'ghost'}
                 size="small"
                 onClick={() => setPhotoFilter('starred')}
               >
-                ★ Starred Only
+                ★ {t.shoot.starredOnly}
               </Button>
             </div>
           </div>
           
           {isLoadingSessions ? (
-            <div className={styles.loading}>Loading photos...</div>
+            <div className={styles.loading}>{t.shoot.loadingPhotos}</div>
           ) : shootSessions.length === 0 ? (
-            <p className={styles.noPhotos}>No photos yet. Start a session to begin!</p>
+            <p className={styles.noPhotos}>{t.shoot.noPhotosYet}</p>
           ) : (
             <div className={styles.sessionsContainer}>
               {shootSessions.map((session, index) => {
@@ -242,7 +242,7 @@ export default function ActiveShootPage() {
                 return (
                   <div key={session.id} className={styles.sessionSection}>
                     <h3 className={styles.sessionTitle}>
-                      Session {index + 1} - {session.poseName} ({filteredPhotos.length} {photoFilter === 'starred' ? 'starred ' : ''}photos)
+                      {t.shoot.sessionLabel} {index + 1} - {session.poseName} ({filteredPhotos.length} {photoFilter === 'starred' ? t.shoot.starredPhotosLabel.toLowerCase() : t.shoot.photosLabel.toLowerCase()})
                     </h3>
                     <div className={styles.photoGrid}>
                       {filteredPhotos.map((photo: any) => (
@@ -278,7 +278,7 @@ export default function ActiveShootPage() {
             loading={isCompleting}
             disabled={isCompleting}
           >
-            Complete Shoot
+            {t.shoot.completeShoot}
           </Button>
         </div>
       </div>

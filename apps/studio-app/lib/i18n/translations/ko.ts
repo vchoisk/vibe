@@ -69,6 +69,18 @@ export const ko: Translations = {
     scheduledDuration: '예정 시간',
     actualDuration: '실제 시간',
     backToHome: '홈으로 돌아가기',
+    overtime: '초과 시간',
+    starredOnly: '별표만',
+    client: '고객',
+    sessionInProgress: '진행 중인 세션',
+    photosTaken: '촬영된 사진',
+    continueSession: '세션 계속',
+    shootPhotos: '사진 촬영',
+    loadingPhotos: '사진 로딩 중...',
+    sessionLabel: '세션',
+    photosLabel: '사진',
+    starredPhotosLabel: '별표 사진',
+    completeSessionFirst: '먼저 현재 세션을 완료해주세요',
   },
   
   session: {
@@ -92,8 +104,8 @@ export const ko: Translations = {
     returnToCapture: '촬영으로 돌아가기',
     title: '포토 세션',
     takePhotos: '사진 촬영',
-    photoProgress: '촬영 진행',
-    photosRemaining: '장 남음',
+    photoProgress: '사진 {current} / {total}',
+    photosRemaining: '{count}장 남음',
     sessionComplete: '세션 완료!',
     instructions: '안내',
     instructionsList: [
@@ -131,6 +143,7 @@ export const ko: Translations = {
     failedToCompleteSession: '세션 완료 실패. 다시 시도해 주세요.',
     noActiveSession: '활성 세션이 없습니다.',
     shootNotFound: '촬영을 찾을 수 없습니다.',
+    failedToCompleteShoot: '촬영 완료 실패',
   },
   
   poseSelect: {
@@ -147,13 +160,13 @@ export const ko: Translations = {
   review: {
     title: '사진 검토',
     subtitle: '좋아하는 사진을 선택하세요',
-    starredCount: '{count}장의 사진이 별표 표시됨',
+    starredCount: '{starred} / {total}장 별표 표시됨',
     starAll: '모두 별표',
     clearAll: '모두 지우기',
     starPhoto: '사진 별표 표시',
     unstarPhoto: '별표 표시 해제',
     readyToFinish: '완료할 준비가 되셨나요?',
-    photosSavedMessage: '별표 표시된 사진이 세션에 저장됩니다.',
+    photosSavedMessage: '{count}장의 별표 사진이 출력 폴더에 저장됩니다.',
     noPhotosSelected: '선택된 사진이 없습니다',
     takeMorePhotos: '더 많은 사진 촬영',
     completeSession: '세션 완료',

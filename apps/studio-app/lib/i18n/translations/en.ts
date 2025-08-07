@@ -69,6 +69,18 @@ export const en: Translations = {
     scheduledDuration: 'Scheduled Duration',
     actualDuration: 'Actual Duration',
     backToHome: 'Back to Home',
+    overtime: 'Overtime',
+    starredOnly: 'Starred Only',
+    client: 'Client',
+    sessionInProgress: 'Session in Progress',
+    photosTaken: 'Photos Taken',
+    continueSession: 'Continue Session',
+    shootPhotos: 'Shoot Photos',
+    loadingPhotos: 'Loading Photos...',
+    sessionLabel: 'Session',
+    photosLabel: 'Photos',
+    starredPhotosLabel: 'Starred Photos',
+    completeSessionFirst: 'Please complete the current session first',
   },
   
   session: {
@@ -92,8 +104,8 @@ export const en: Translations = {
     returnToCapture: 'Return to Capture',
     title: 'Photo Session',
     takePhotos: 'Take Photos',
-    photoProgress: 'Photo Progress',
-    photosRemaining: 'photos remaining',
+    photoProgress: 'Photo {current} of {total}',
+    photosRemaining: '{count} photos remaining',
     sessionComplete: 'Session Complete!',
     instructions: 'Instructions',
     instructionsList: [
@@ -131,6 +143,7 @@ export const en: Translations = {
     failedToCompleteSession: 'Failed to complete session. Please try again.',
     noActiveSession: 'No active session found.',
     shootNotFound: 'Shoot not found.',
+    failedToCompleteShoot: 'Failed to complete shoot',
   },
   
   poseSelect: {
@@ -147,13 +160,13 @@ export const en: Translations = {
   review: {
     title: 'Review Photos',
     subtitle: 'Select your favorite photos',
-    starredCount: '{count} photos starred',
+    starredCount: '{starred} of {total} photos starred',
     starAll: 'Star All',
     clearAll: 'Clear All',
     starPhoto: 'Star photo',
     unstarPhoto: 'Unstar photo',
     readyToFinish: 'Ready to finish?',
-    photosSavedMessage: 'Your starred photos will be saved to the session.',
+    photosSavedMessage: 'Your {count} starred photos will be saved to your output folder.',
     noPhotosSelected: 'No photos selected',
     takeMorePhotos: 'Take More Photos',
     completeSession: 'Complete Session',

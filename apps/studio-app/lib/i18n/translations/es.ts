@@ -69,6 +69,18 @@ export const es: Translations = {
     scheduledDuration: 'Duración Programada',
     actualDuration: 'Duración Real',
     backToHome: 'Volver al Inicio',
+    overtime: 'Tiempo Extra',
+    starredOnly: 'Solo Favoritas',
+    client: 'Cliente',
+    sessionInProgress: 'Sesión en Progreso',
+    photosTaken: 'Fotos Tomadas',
+    continueSession: 'Continuar Sesión',
+    shootPhotos: 'Tomar Fotos',
+    loadingPhotos: 'Cargando Fotos...',
+    sessionLabel: 'Sesión',
+    photosLabel: 'Fotos',
+    starredPhotosLabel: 'Fotos Favoritas',
+    completeSessionFirst: 'Por favor complete la sesión actual primero',
   },
   
   session: {
@@ -92,8 +104,8 @@ export const es: Translations = {
     returnToCapture: 'Volver a Captura',
     title: 'Sesión de Fotos',
     takePhotos: 'Tomar Fotos',
-    photoProgress: 'Progreso de Fotos',
-    photosRemaining: 'fotos restantes',
+    photoProgress: 'Foto {current} de {total}',
+    photosRemaining: '{count} fotos restantes',
     sessionComplete: '¡Sesión Completa!',
     instructions: 'Instrucciones',
     instructionsList: [
@@ -131,6 +143,7 @@ export const es: Translations = {
     failedToCompleteSession: 'Error al completar la sesión. Por favor intente nuevamente.',
     noActiveSession: 'No hay sesión activa.',
     shootNotFound: 'Sesión no encontrada.',
+    failedToCompleteShoot: 'Error al completar la sesión',
   },
   
   poseSelect: {
@@ -147,13 +160,13 @@ export const es: Translations = {
   review: {
     title: 'Revisar Fotos',
     subtitle: 'Seleccione sus fotos favoritas',
-    starredCount: '{count} fotos marcadas',
+    starredCount: '{starred} de {total} fotos marcadas',
     starAll: 'Marcar Todas',
     clearAll: 'Limpiar Todas',
     starPhoto: 'Marcar foto',
     unstarPhoto: 'Desmarcar foto',
     readyToFinish: '¿Listo para terminar?',
-    photosSavedMessage: 'Sus fotos marcadas se guardarán en la sesión.',
+    photosSavedMessage: 'Sus {count} fotos marcadas se guardarán en la carpeta de salida.',
     noPhotosSelected: 'No se seleccionaron fotos',
     takeMorePhotos: 'Tomar Más Fotos',
     completeSession: 'Completar Sesión',

@@ -69,6 +69,18 @@ export const zh: Translations = {
     scheduledDuration: '计划时长',
     actualDuration: '实际时长',
     backToHome: '返回主页',
+    overtime: '超时',
+    starredOnly: '仅收藏',
+    client: '客户',
+    sessionInProgress: '会话进行中',
+    photosTaken: '已拍摄照片',
+    continueSession: '继续会话',
+    shootPhotos: '拍摄照片',
+    loadingPhotos: '正在加载照片...',
+    sessionLabel: '会话',
+    photosLabel: '照片',
+    starredPhotosLabel: '收藏照片',
+    completeSessionFirst: '请先完成当前会话',
   },
   
   session: {
@@ -92,8 +104,8 @@ export const zh: Translations = {
     returnToCapture: '返回拍摄',
     title: '拍照会话',
     takePhotos: '拍摄照片',
-    photoProgress: '拍摄进度',
-    photosRemaining: '张剩余',
+    photoProgress: '照片 {current} / {total}',
+    photosRemaining: '剩余{count}张',
     sessionComplete: '会话完成！',
     instructions: '说明',
     instructionsList: [
@@ -131,6 +143,7 @@ export const zh: Translations = {
     failedToCompleteSession: '完成会话失败。请重试。',
     noActiveSession: '没有活动会话。',
     shootNotFound: '找不到拍摄。',
+    failedToCompleteShoot: '无法完成拍摄',
   },
   
   poseSelect: {
@@ -147,13 +160,13 @@ export const zh: Translations = {
   review: {
     title: '查看照片',
     subtitle: '选择您喜欢的照片',
-    starredCount: '已标记{count}张照片',
+    starredCount: '{starred} / {total}张照片已收藏',
     starAll: '全部标记',
     clearAll: '全部清除',
     starPhoto: '标记照片',
     unstarPhoto: '取消标记',
     readyToFinish: '准备完成了吗？',
-    photosSavedMessage: '您标记的照片将保存到会话中。',
+    photosSavedMessage: '您的{count}张收藏照片将保存到输出文件夹。',
     noPhotosSelected: '没有选择照片',
     takeMorePhotos: '拍摄更多照片',
     completeSession: '完成会话',
