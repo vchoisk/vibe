@@ -59,7 +59,7 @@ setupDirectories().then(() => {
 
   photoMonitor = new PhotoMonitor({
     watchDirectory: defaultConfig.watchDirectory,
-    awaitWriteFinish: true,
+    awaitWriteFinish: false,
   });
   
   // If there's a restored active session, start watching for photos
