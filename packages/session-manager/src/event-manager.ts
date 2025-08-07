@@ -45,9 +45,21 @@ export class EventManager extends EventEmitter {
 
   async getAllEvents(): Promise<Event[]> {
     if (await pathExists(this.eventsFile)) {
-      return await readJSON(this.eventsFile);
+      const events = await readJSON(this.eventsFile);
+      return events.map((event: any) => this.deserializeEvent(event));
     }
     return [];
+  }
+
+  private deserializeEvent(data: any): Event {
+    return {
+      ...data,
+      startTime: new Date(data.startTime),
+      endTime: new Date(data.endTime),
+      createdAt: new Date(data.createdAt),
+      activatedAt: data.activatedAt ? new Date(data.activatedAt) : undefined,
+      completedAt: data.completedAt ? new Date(data.completedAt) : undefined,
+    };
   }
 
   async createEvent(data: {
@@ -208,6 +220,10 @@ export class EventManager extends EventEmitter {
       this.currentEvent = null;
     }
 
+    // Ensure dates are Date objects
+    const activatedAt = event.activatedAt ? new Date(event.activatedAt) : null;
+    const completedAt = new Date(event.completedAt);
+    
     const summary: EventSummary = {
       eventId: event.id,
       totalSessions: event.sessions.length,
@@ -217,8 +233,8 @@ export class EventManager extends EventEmitter {
       sessionDetails,
       duration: {
         scheduled: event.durationMinutes,
-        actual: event.activatedAt 
-          ? Math.floor((event.completedAt.getTime() - event.activatedAt.getTime()) / 60000)
+        actual: activatedAt 
+          ? Math.floor((completedAt.getTime() - activatedAt.getTime()) / 60000)
           : 0,
       },
     };
@@ -233,7 +249,8 @@ export class EventManager extends EventEmitter {
     }
 
     const now = new Date();
-    if (now >= this.currentEvent.endTime) {
+    const endTime = new Date(this.currentEvent.endTime);
+    if (now >= endTime) {
       console.log(`Event ${this.currentEvent.id} has exceeded its scheduled time`);
       this.emit('event-overtime', this.currentEvent);
     }
@@ -254,7 +271,8 @@ export class EventManager extends EventEmitter {
     }
 
     const now = new Date();
-    const remaining = this.currentEvent.endTime.getTime() - now.getTime();
+    const endTime = new Date(this.currentEvent.endTime);
+    const remaining = endTime.getTime() - now.getTime();
     return Math.max(0, Math.floor(remaining / 60000)); // Return minutes
   }
 
