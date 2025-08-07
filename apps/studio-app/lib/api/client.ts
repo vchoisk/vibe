@@ -168,7 +168,7 @@ export const api = {
       return request<{ photos: any[]; total: number }>(`/photos${query}`);
     },
     
-    star: (photoId: string, starred: boolean) =>
+    star: (photoId: string, starred: boolean, sessionId?: string) =>
       request<{ 
         success: boolean; 
         session: any; 
@@ -176,7 +176,7 @@ export const api = {
       }>('/photos/star', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ photoId, starred }),
+        body: JSON.stringify({ photoId, starred, sessionId }),
       }),
   },
   

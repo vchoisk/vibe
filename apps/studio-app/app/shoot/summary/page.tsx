@@ -71,13 +71,13 @@ function ShootSummaryContent() {
     router.push('/');
   };
 
-  const handleStarPhoto = async (photoId: string, currentlyStarred: boolean) => {
+  const handleStarPhoto = async (photoId: string, sessionId: string, currentlyStarred: boolean) => {
     if (starringPhoto) return; // Prevent multiple simultaneous requests
     
     setStarringPhoto(photoId);
     try {
       // Call the star API
-      await api.photos.star(photoId, !currentlyStarred);
+      await api.photos.star(photoId, !currentlyStarred, sessionId);
       
       // Update local state - modify the summary
       setSummary(prevSummary => {
@@ -228,7 +228,7 @@ function ShootSummaryContent() {
                         />
                         <button
                           className={styles.starButton}
-                          onClick={() => handleStarPhoto(photo.id, isStarred)}
+                          onClick={() => handleStarPhoto(photo.id, currentSession.id, isStarred)}
                           disabled={starringPhoto === photo.id}
                           aria-label={isStarred ? t.review.unstarPhoto : t.review.starPhoto}
                         >

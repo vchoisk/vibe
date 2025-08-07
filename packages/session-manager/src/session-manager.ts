@@ -140,28 +140,45 @@ export class SessionManager extends EventEmitter {
     }
   }
 
-  async starPhoto(photoId: string, starred: boolean): Promise<void> {
-    if (!this.currentSession) {
-      throw new Error('No active session');
+  async starPhoto(photoId: string, starred: boolean, sessionId?: string): Promise<void> {
+    // If sessionId is provided, use that session; otherwise use current session
+    let targetSession: PhotoSession | null = null;
+    
+    if (sessionId) {
+      targetSession = await this.getSession(sessionId);
+      if (!targetSession) {
+        throw new Error(`Session not found: ${sessionId}`);
+      }
+    } else {
+      if (!this.currentSession) {
+        throw new Error('No active session');
+      }
+      targetSession = this.currentSession;
     }
 
-    const photo = this.currentSession.photos.find(p => p.id === photoId);
+    const photo = targetSession.photos.find(p => p.id === photoId);
     if (!photo) {
-      throw new Error('Photo not found in current session');
+      throw new Error('Photo not found in session');
     }
 
     photo.starred = starred;
 
-    if (starred && !this.currentSession.starredPhotos.includes(photoId)) {
-      this.currentSession.starredPhotos.push(photoId);
+    if (starred && !targetSession.starredPhotos.includes(photoId)) {
+      targetSession.starredPhotos.push(photoId);
     } else if (!starred) {
-      this.currentSession.starredPhotos = this.currentSession.starredPhotos.filter(
+      targetSession.starredPhotos = targetSession.starredPhotos.filter(
         id => id !== photoId
       );
     }
 
-    await this.saveSession(this.currentSession);
-    this.emit('photo-starred', { photoId, starred, session: this.currentSession });
+    await this.saveSession(targetSession);
+    
+    // If we modified the current session, update the instance
+    if (targetSession.id === this.currentSession?.id) {
+      this.currentSession = targetSession;
+    }
+    
+    this.emit('photo-starred', { photoId, starred, session: targetSession });
   }
 
   async updateSessionStatus(status: PhotoSession['status']): Promise<void> {

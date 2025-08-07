@@ -73,7 +73,7 @@ export default function ActiveShootPage() {
     setStarringPhoto(photoId);
     try {
       // Call the star API
-      await api.photos.star(photoId, !currentlyStarred);
+      await api.photos.star(photoId, !currentlyStarred, sessionId);
       
       // Update local state
       setShootSessions(prevSessions => 

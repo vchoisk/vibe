@@ -21,7 +21,7 @@ function getSessionManager(): SessionManager {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { photoId, starred } = body;
+    const { photoId, starred, sessionId } = body;
 
     if (!photoId || starred === undefined) {
       return NextResponse.json(
@@ -31,13 +31,20 @@ export async function POST(request: NextRequest) {
     }
 
     const manager = getSessionManager();
-    await manager.starPhoto(photoId, starred);
+    await manager.starPhoto(photoId, starred, sessionId);
 
-    const session = manager.getCurrentSession();
+    // If sessionId was provided, get that specific session for the response
+    let responseSession;
+    if (sessionId) {
+      responseSession = await manager.getSession(sessionId);
+    } else {
+      responseSession = manager.getCurrentSession();
+    }
+
     return NextResponse.json({ 
       success: true,
-      session,
-      starredCount: session?.starredPhotos.length || 0,
+      session: responseSession,
+      starredCount: responseSession?.starredPhotos.length || 0,
     });
   } catch (error) {
     return NextResponse.json(
