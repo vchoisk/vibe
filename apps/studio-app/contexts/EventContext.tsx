@@ -22,7 +22,7 @@ interface EventContextType {
     };
   }) => Promise<Event>;
   startEvent: (eventId: string) => Promise<Event>;
-  completeEvent: (eventId: string) => Promise<any>;
+  completeEvent: (eventId: string, onComplete?: () => void) => Promise<any>;
   refreshCurrentEvent: () => Promise<void>;
 }
 
@@ -145,9 +145,15 @@ export function EventProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const completeEvent = async (eventId: string) => {
+  const completeEvent = async (eventId: string, onComplete?: () => void) => {
     try {
       const response = await api.events.complete(eventId);
+      
+      // Execute navigation callback before clearing event
+      if (onComplete) {
+        onComplete();
+      }
+      
       setEvent(null);
       setRemainingMinutes(0);
       return response.summary;

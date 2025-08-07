@@ -90,10 +90,10 @@ export default function ActiveEventPage() {
     const eventId = event.id;
     
     try {
-      // Navigate immediately to avoid redirect race
-      router.push(`/event/summary?id=${eventId}`);
-      
-      const summary = await completeEvent(eventId);
+      const summary = await completeEvent(eventId, () => {
+        // Navigate in the same execution context as clearing the event
+        router.push(`/event/summary?id=${eventId}`);
+      });
       
       // Toast will show on the summary page
       console.log(`Event completed! ${summary.totalPhotos} photos from ${summary.totalSessions} sessions.`);
@@ -106,9 +106,6 @@ export default function ActiveEventPage() {
         type: 'error',
       });
       setIsCompleting(false);
-      
-      // Navigate back to event page on error
-      router.push('/event/active');
     }
   };
 
