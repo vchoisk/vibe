@@ -133,10 +133,11 @@ export class EventManager extends EventEmitter {
     event.endTime = new Date(event.activatedAt.getTime() + event.durationMinutes * 60000);
 
     await this.saveEvents(events);
-    this.currentEvent = event;
+    // Ensure currentEvent has proper Date objects
+    this.currentEvent = this.deserializeEvent(event);
     
-    this.emit('event-started', event);
-    return event;
+    this.emit('event-started', this.currentEvent);
+    return this.currentEvent;
   }
 
   async updateEvent(eventId: string, updates: Partial<Event>): Promise<Event> {
@@ -150,12 +151,14 @@ export class EventManager extends EventEmitter {
     events[eventIndex] = { ...events[eventIndex], ...updates };
     await this.saveEvents(events);
 
+    const updatedEvent = this.deserializeEvent(events[eventIndex]);
+    
     if (this.currentEvent?.id === eventId) {
-      this.currentEvent = events[eventIndex];
+      this.currentEvent = updatedEvent;
     }
 
-    this.emit('event-updated', events[eventIndex]);
-    return events[eventIndex];
+    this.emit('event-updated', updatedEvent);
+    return updatedEvent;
   }
 
   async addSessionToEvent(eventId: string, sessionId: string): Promise<Event> {
@@ -170,14 +173,17 @@ export class EventManager extends EventEmitter {
       event.sessions.push(sessionId);
       await this.saveEvents(events);
       
+      const updatedEvent = this.deserializeEvent(event);
+      
       if (this.currentEvent?.id === eventId) {
-        this.currentEvent = event;
+        this.currentEvent = updatedEvent;
       }
       
-      this.emit('event-updated', event);
+      this.emit('event-updated', updatedEvent);
+      return updatedEvent;
     }
 
-    return event;
+    return this.deserializeEvent(event);
   }
 
   async completeEvent(eventId: string, sessionManager: any): Promise<EventSummary> {
@@ -191,6 +197,19 @@ export class EventManager extends EventEmitter {
     if (event.status === 'completed') {
       throw new Error('Event is already completed');
     }
+
+    if (event.status !== 'active') {
+      throw new Error(`Cannot complete event with status: ${event.status}. Event must be active.`);
+    }
+
+    // Debug logging
+    console.log('[EventManager] Completing event:', {
+      eventId,
+      status: event.status,
+      activatedAt: event.activatedAt,
+      activatedAtType: typeof event.activatedAt,
+      activatedAtIsDate: event.activatedAt instanceof Date,
+    });
 
     // Get all sessions for this event
     const sessionDetails: PhotoSession[] = [];
@@ -220,9 +239,18 @@ export class EventManager extends EventEmitter {
       this.currentEvent = null;
     }
 
-    // Ensure dates are Date objects
-    const activatedAt = event.activatedAt ? new Date(event.activatedAt) : null;
-    const completedAt = new Date(event.completedAt);
+    // Ensure we have a completedAt date
+    if (!event.completedAt) {
+      throw new Error('Event completedAt date is missing');
+    }
+    
+    // Ensure dates are Date objects (handle both Date and string)
+    const activatedAt = event.activatedAt 
+      ? (event.activatedAt instanceof Date ? event.activatedAt : new Date(event.activatedAt))
+      : null;
+    const completedAt = event.completedAt instanceof Date 
+      ? event.completedAt 
+      : new Date(event.completedAt);
     
     const summary: EventSummary = {
       eventId: event.id,
