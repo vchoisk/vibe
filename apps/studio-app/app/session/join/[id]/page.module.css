@@ -179,6 +179,12 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.photo:hover {
+  transform: scale(1.02);
 }
 
 .starButton {
@@ -266,6 +272,67 @@
   color: #ef4444;
 }
 
+/* Capture Button */
+.captureButton {
+  position: fixed;
+  bottom: 5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4rem;
+  height: 4rem;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: 3px solid white;
+  color: white;
+  font-size: 1.5rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  transition: all 0.3s ease;
+  z-index: 100;
+}
+
+.captureButton:hover {
+  transform: translateX(-50%) scale(1.1);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+}
+
+.captureButton:active {
+  transform: translateX(-50%) scale(0.95);
+}
+
+.captureButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.captureButton:disabled:hover {
+  transform: translateX(-50%) scale(1);
+}
+
+.captureIcon {
+  width: 2rem;
+  height: 2rem;
+}
+
+.capturing {
+  animation: captureFlash 0.5s ease;
+}
+
+@keyframes captureFlash {
+  0% {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  }
+  50% {
+    background: white;
+  }
+  100% {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  }
+}
+
 /* Mobile Responsive */
 @media (max-width: 768px) {
   .photoGrid {
@@ -289,5 +356,9 @@
     left: 1rem;
     right: 1rem;
     justify-content: center;
+  }
+
+  .captureButton {
+    bottom: 6rem;
   }
 }

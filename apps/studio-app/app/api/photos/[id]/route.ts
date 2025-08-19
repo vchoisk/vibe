@@ -27,19 +27,45 @@ export async function GET(
   try {
     const { id: photoId } = await params;
     const manager = getSessionManager();
+    
+    // First try to find the photo in the current session
     const currentSession = manager.getCurrentSession();
+    let photo = currentSession?.photos.find(p => p.id === photoId);
+    let photoPath = photo?.filepath;
     
-    if (!currentSession) {
-      return NextResponse.json(
-        { error: 'No active session' },
-        { status: 404 }
-      );
-    }
-
-    // Find the photo in the current session
-    const photo = currentSession.photos.find(p => p.id === photoId);
-    
+    // If not found in current session, search in all sessions
     if (!photo) {
+      const paths = getPaths();
+      const sessionsDir = path.join(paths.appData, 'sessions');
+      
+      // Check if sessions directory exists
+      if (fs.existsSync(sessionsDir)) {
+        const sessionDirs = fs.readdirSync(sessionsDir).filter(dir => 
+          fs.statSync(path.join(sessionsDir, dir)).isDirectory()
+        );
+        
+        // Search through each session for the photo
+        for (const sessionDir of sessionDirs) {
+          const sessionDataPath = path.join(sessionsDir, sessionDir, 'session.json');
+          if (fs.existsSync(sessionDataPath)) {
+            try {
+              const sessionData = JSON.parse(fs.readFileSync(sessionDataPath, 'utf-8'));
+              const foundPhoto = sessionData.photos?.find((p: any) => p.id === photoId);
+              if (foundPhoto) {
+                photo = foundPhoto;
+                photoPath = foundPhoto.filepath;
+                break;
+              }
+            } catch (e) {
+              // Skip invalid session files
+              continue;
+            }
+          }
+        }
+      }
+    }
+    
+    if (!photo || !photoPath) {
       return NextResponse.json(
         { error: 'Photo not found' },
         { status: 404 }
@@ -47,7 +73,6 @@ export async function GET(
     }
 
     // Read the photo file
-    const photoPath = photo.filepath;
     
     if (!fs.existsSync(photoPath)) {
       return NextResponse.json(
@@ -65,11 +90,17 @@ export async function GET(
     else if (ext === '.gif') contentType = 'image/gif';
     else if (ext === '.webp') contentType = 'image/webp';
     
-    // Return the image
+    // Get filename for download
+    const filename = `photo-${photoId}${ext}`;
+    
+    // Return the image with proper headers
     return new NextResponse(photoBuffer, {
       headers: {
         'Content-Type': contentType,
+        'Content-Length': photoBuffer.length.toString(),
+        'Content-Disposition': `inline; filename="${filename}"`,
         'Cache-Control': 'private, max-age=3600',
+        'X-Content-Type-Options': 'nosniff',
       },
     });
   } catch (error) {

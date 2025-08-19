@@ -6,6 +6,7 @@ import { Button } from '@/components/Button';
 import { Card, CardBody } from '@/components/Card';
 import { PageLayout } from '@/components/PageLayout';
 import { Toast } from '@/components/Toast';
+import { PhotoViewer } from '@/components/PhotoViewer';
 import { useSocket } from '@/lib/hooks/useSocket';
 import { api } from '@/lib/api/client';
 import styles from './page.module.css';
@@ -49,6 +50,9 @@ export default function JoinSessionPage() {
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const [starringPhoto, setStarringPhoto] = useState<string | null>(null);
   const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
+  const [viewerPhotoIndex, setViewerPhotoIndex] = useState<number | null>(null);
+  const [isCapturing, setIsCapturing] = useState(false);
+  const [poseNumber, setPoseNumber] = useState(1);
 
   // Load initial shoot and session data
   useEffect(() => {
@@ -109,6 +113,7 @@ export default function JoinSessionPage() {
         setSelectedSessionId(data.session.id);
         setPhotos(data.session.photos || []);
         setStarredPhotos(new Set(data.session.starredPhotos || []));
+        setPoseNumber(1); // Reset pose number for new session
         
         // Add to sessions list
         setSessions(prev => [...prev, data.session]);
@@ -231,8 +236,16 @@ export default function JoinSessionPage() {
     }
   };
 
-  const handleStarPhoto = async (photoId: string, sessionId: string) => {
+  const handleStarPhoto = async (photoId: string, sessionId?: string) => {
     if (starringPhoto) return;
+    
+    // Find which session this photo belongs to if not provided
+    if (!sessionId) {
+      const photoSession = sessions.find(s => 
+        s.photos.some(p => p.id === photoId)
+      );
+      sessionId = photoSession?.id || selectedSessionId || '';
+    }
     
     const isStarred = starredPhotos.has(photoId);
     const newStarred = !isStarred;
@@ -295,6 +308,47 @@ export default function JoinSessionPage() {
       setSelectedSessionId(sessionId);
       setPhotos(session.photos || []);
       setStarredPhotos(new Set(session.starredPhotos || []));
+    }
+  };
+
+  const handleCapture = async () => {
+    if (!currentSession || isCapturing) return;
+    
+    setIsCapturing(true);
+    try {
+      const response = await fetch(`/api/shoots/${shootId}/capture`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          sessionId: currentSession.id,
+          poseNumber: poseNumber
+        })
+      });
+
+      const data = await response.json();
+      
+      if (response.ok) {
+        setToast({
+          message: `Photo captured: Pose ${poseNumber}`,
+          type: 'success'
+        });
+        setPoseNumber(prev => prev + 1);
+      } else {
+        setToast({
+          message: data.error || 'Failed to capture photo',
+          type: 'error'
+        });
+      }
+    } catch (error) {
+      console.error('Capture error:', error);
+      setToast({
+        message: 'Failed to capture photo',
+        type: 'error'
+      });
+    } finally {
+      setIsCapturing(false);
     }
   };
 
@@ -386,7 +440,7 @@ export default function JoinSessionPage() {
                   </div>
                   
                   <div className={styles.photoGrid}>
-                    {displayPhotos.map((photo) => {
+                    {displayPhotos.map((photo, index) => {
                       const isStarred = starredPhotos.has(photo.id);
                       return (
                         <div
@@ -397,6 +451,8 @@ export default function JoinSessionPage() {
                             src={`/api/photos/${photo.id}`}
                             alt={`Photo ${photo.id}`}
                             className={styles.photo}
+                            onClick={() => setViewerPhotoIndex(index)}
+                            style={{ cursor: 'pointer' }}
                           />
                           <button
                             className={styles.starButton}
@@ -448,6 +504,44 @@ export default function JoinSessionPage() {
             type={toast.type}
             onClose={() => setToast(null)}
           />
+        )}
+
+        {viewerPhotoIndex !== null && (
+          <PhotoViewer
+            photos={displayPhotos}
+            initialIndex={viewerPhotoIndex}
+            isStarred={(photoId) => starredPhotos.has(photoId)}
+            onStar={(photoId) => handleStarPhoto(photoId)}
+            onClose={() => setViewerPhotoIndex(null)}
+          />
+        )}
+
+        {/* Floating Capture Button */}
+        {currentSession && (
+          <button
+            className={`${styles.captureButton} ${isCapturing ? styles.capturing : ''}`}
+            onClick={handleCapture}
+            disabled={isCapturing || !isConnected}
+            aria-label="Capture photo"
+            title={isCapturing ? 'Capturing...' : 'Capture photo'}
+          >
+            {isCapturing ? (
+              <span>...</span>
+            ) : (
+              <svg 
+                className={styles.captureIcon}
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="2"
+                strokeLinecap="round" 
+                strokeLinejoin="round"
+              >
+                <circle cx="12" cy="12" r="10"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+            )}
+          </button>
         )}
       </main>
     </PageLayout>
